@@ -21,7 +21,7 @@ import java.io.File;
  */
 
 public class UploadErrorLogListener implements OnResponseListener<JSONObject> {
-    private MainActivity mainActivity;
+//    private MainActivity mainActivity;
     private Handler handler;
     //use a int key to point to a file name, as well as the 'what' value
     //this what value can be used in success/fail/finish function
@@ -35,7 +35,7 @@ public class UploadErrorLogListener implements OnResponseListener<JSONObject> {
     private String strPic =  " log files";
 
     public UploadErrorLogListener(MainActivity mainActivity){
-        this.mainActivity = mainActivity;
+//        this.mainActivity = mainActivity;
         handler = mainActivity.getProgressDlgHandler();
     }
     @Override

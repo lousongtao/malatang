@@ -3,7 +3,6 @@ package com.shuishou.malatang.ui;
 import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.wifi.WifiInfo;
@@ -14,8 +13,6 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -24,9 +21,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.RadioButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -53,7 +47,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -95,13 +88,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txtWeight = (EditText)findViewById(R.id.txtWeight);
         deskAreaLayout = (TableLayout)findViewById(R.id.deskAreaLayout);
         tvPrice = (TextView)findViewById(R.id.tvPrice);
-        Button btnTest = (Button)findViewById(R.id.btnTest);
-        btnTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int i = 1/0;
-            }
-        });
         tvUploadErrorLog.setOnClickListener(this);
         tvRefreshData.setOnClickListener(this);
         tvDishName.setOnClickListener(this);
@@ -135,7 +121,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //read local database to memory
         desks = dbOperator.queryDesks();
-        httpOperator.queryConfirmCode();
+        loadConfirmCode();
+
         loadDish();
         buildDesks();
     }
@@ -144,17 +131,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return dish.getPrice() * weight;
     }
 
+    private void loadConfirmCode(){
+        if (InstantValue.URL_TOMCAT != null && InstantValue.URL_TOMCAT.length() > 0)
+            httpOperator.queryConfirmCode();
+    }
     private void loadDish(){
         new Thread(){
             @Override
             public void run() {
-                if (InstantValue.URL_TOMCAT != null)
+                if (InstantValue.URL_TOMCAT != null && InstantValue.URL_TOMCAT.length() > 0)
                     dish = httpOperator.getDishByNameSync(IOOperator.loadDishName());
             }
         }.start();
     }
 
-    private void buildDesks(){
+    public void buildDesks(){
+        deskAreaLayout.removeAllViews();
         if (desks == null || desks.isEmpty())
             return;
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -178,12 +170,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public Handler getProgressDlgHandler(){
-        return progressDlgHandler;
-    }
 
-    private void onStartOrder(){
-    }
 
     public void setDish(Dish dish){
         this.dish = dish;
@@ -202,14 +189,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dbOperator.saveObjectsByCascade(desks);
     }
 
-    public void startProgressDialog(String title, String message){
-        progressDlg = ProgressDialog.show(this, title, message);
-    }
+
 
     @Override
     public void onClick(View v) {
         if (tvUploadErrorLog == v){
-            onUploadErrorLog();
+            IOOperator.onUploadErrorLog(this);
         } else if (v == tvRefreshData){
             onRefreshData();
         } else if (v == tvServerURL){
@@ -337,81 +322,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CommonTool.popupWarnDialog(this, R.drawable.info, "成功", "数据同步成功.");
     }
 
-    /**
-     * 1. compare logfile's date, if too old delete it, then load all left log files and zip them
-     * 2. use http protocol to upload
-     * 3. load finish successfully, then delete this file.
-     */
-    private void onUploadErrorLog(){
-        File logdir = new File(InstantValue.ERRORLOGPATH);
-        if (logdir.exists() && logdir.isDirectory()) {
-            File[] files = logdir.listFiles();
-            if (files != null && files.length > 0) {
-                //delete the old log files, we just upload them in 30 days, the logfile's name has the format crash-2017-10-05-17-53-25-1507226005123
-                Calendar c = Calendar.getInstance();
-                for (File file : files) {
-                    String filename = file.getName();
-                    String[] times = filename.split("-");
-                    if (times.length<3)
-                        continue;//wrong log file, jump up to avoid exception here
-                    c.set(Calendar.YEAR, Integer.parseInt(times[1]));
-                    c.set(Calendar.MONTH, Integer.parseInt(times[2]));
-                    c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(times[3]));
-                    if ((new Date().getTime() - c.getTime().getTime()) / (24 * 60 * 60 * 1000) > 30) {
-                        file.delete();
-                    }
-                }
-            }
-            files = logdir.listFiles();
-            if (files != null && files.length > 0) {
-                String zipfilename = InstantValue.ERRORLOGPATH + "/logs-" +System.currentTimeMillis()+ ".zip";
-                //zip log files
-                try {
-                    BufferedInputStream origin = null;
-                    FileOutputStream dest = new FileOutputStream(zipfilename);
-                    ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
-                    byte data[] = new byte[2048];
-                    // get a list of files from current directory
-                    for (int i=0; i < files.length; i++) {
-                        FileInputStream fi = new FileInputStream(files[i]);
-                        origin = new BufferedInputStream(fi, 2048);
-                        ZipEntry entry = new ZipEntry(files[i].getName());
-                        out.putNextEntry(entry);
-                        int count;
-                        while((count = origin.read(data, 0, 2048)) != -1) {
-                            out.write(data, 0, count);
-                        }
-                        origin.close();
-                    }
-                    out.close();
-                    //delete log files
-                    for(File file : files){
-                        file.delete();
-                    }
 
-                } catch(Exception e) {
-                    CrashHandler.getInstance().handleException(e, false);
-                    CommonTool.popupWarnDialog(this, -1,"Error", "error while zip log files");
-                    return;
-                }
-                File logzip = new File(zipfilename);
-                //get MAC address as the unique id
-                WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                WifiInfo wInfo = wifiManager.getConnectionInfo();
-                String macAddress = wInfo.getMacAddress();
-
-                startProgressDialog("upload", "prepare to upload error log files");
-                try {
-                    httpOperator.uploadErrorLog(logzip, macAddress);
-                } catch (FileNotFoundException e) {
-                    CrashHandler.getInstance().handleException(e, false);
-                    progressDlgHandler.sendMessage(CommonTool.buildMessage(PROGRESSDLGHANDLER_MSGWHAT_DISMISSDIALOG));
-                }
-            } else {
-                CommonTool.popupToast(this,"There is not error log now.", Toast.LENGTH_LONG);
-            }
-        }
-    }
     public void setDesk(ArrayList<Desk> desks){
         this.desks = desks;
     }
@@ -479,6 +390,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     };
+
+    public Handler getProgressDlgHandler(){
+        return progressDlgHandler;
+    }
+
+    public void startProgressDialog(String title, String message){
+        progressDlg = ProgressDialog.show(this, title, message);
+    }
 
     public static final int PROGRESSDLGHANDLER_MSGWHAT_DISMISSDIALOG = 0;
     public static final int PROGRESSDLGHANDLER_MSGWHAT_SHOWPROGRESS = 1;

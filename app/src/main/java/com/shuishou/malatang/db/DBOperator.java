@@ -1,7 +1,6 @@
 package com.shuishou.malatang.db;
 
 import com.litesuits.orm.LiteOrm;
-import com.litesuits.orm.db.assit.QueryBuilder;
 import com.shuishou.malatang.bean.Desk;
 import com.shuishou.malatang.ui.MainActivity;
 
@@ -12,11 +11,11 @@ import java.util.ArrayList;
  */
 
 public class DBOperator {
-    private final MainActivity mainActivity;
+//    private final MainActivity mainActivity;
     private static LiteOrm liteOrm;
 
     public DBOperator(MainActivity mainActivity){
-        this.mainActivity = mainActivity;
+//        this.mainActivity = mainActivity;
         if (liteOrm == null){
             liteOrm = LiteOrm.newCascadeInstance(mainActivity, "digitalmenu.db");
         }

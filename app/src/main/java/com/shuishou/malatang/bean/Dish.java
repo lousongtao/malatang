@@ -1,16 +1,7 @@
 package com.shuishou.malatang.bean;
 
-import com.google.gson.annotations.SerializedName;
-import com.litesuits.orm.db.annotation.Column;
-import com.litesuits.orm.db.annotation.Mapping;
-import com.litesuits.orm.db.annotation.PrimaryKey;
-import com.litesuits.orm.db.annotation.Table;
-import com.litesuits.orm.db.enums.AssignType;
-import com.litesuits.orm.db.enums.Relation;
-import com.shuishou.malatang.InstantValue;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
 /**
  * Created by Administrator on 2016/12/22.
@@ -177,8 +168,6 @@ public class Dish implements Serializable{
         if (getClass() != obj.getClass())
             return false;
         Dish other = (Dish) obj;
-        if (id != other.id)
-            return false;
-        return true;
+        return id == other.id;
     }
 }

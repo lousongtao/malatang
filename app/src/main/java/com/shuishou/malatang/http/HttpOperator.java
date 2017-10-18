@@ -16,8 +16,6 @@ import com.shuishou.malatang.utils.CommonTool;
 import com.yanzhenjie.nohttp.FileBinary;
 import com.yanzhenjie.nohttp.NoHttp;
 import com.yanzhenjie.nohttp.RequestMethod;
-import com.yanzhenjie.nohttp.download.DownloadQueue;
-import com.yanzhenjie.nohttp.download.DownloadRequest;
 import com.yanzhenjie.nohttp.rest.OnResponseListener;
 import com.yanzhenjie.nohttp.rest.Request;
 import com.yanzhenjie.nohttp.rest.RequestQueue;
@@ -26,12 +24,9 @@ import com.yanzhenjie.nohttp.rest.Response;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by Administrator on 2017/6/9.
@@ -39,11 +34,10 @@ import java.util.Set;
 
 public class HttpOperator {
 
-    private String logTag = "HttpOperation";
+    private final String logTag = "HttpOperation";
 
 
     private MainActivity mainActivity;
-//    private ArrayList<String> listDishPictures = new ArrayList<>();
     private static final int WHAT_VALUE_QUERYDESK = 4;
     private static final int WHAT_VALUE_QUERYCONFIRMCODE = 6;
 
@@ -133,6 +127,7 @@ public class HttpOperator {
             });
             mainActivity.setDesk(result.data);
             mainActivity.persistDesk();
+            mainActivity.buildDesks();
         } else {
             new AlertDialog.Builder(mainActivity)
                     .setIcon(R.drawable.error)
@@ -201,8 +196,7 @@ public class HttpOperator {
             result.result = "Error occur while make order. response.get() is null";
             return result;
         }
-        HttpResult<Integer> result = gson.fromJson(response.get().toString(), new TypeToken<HttpResult<Integer>>(){}.getType());
-        return result;
+        return gson.fromJson(response.get().toString(), new TypeToken<HttpResult<Integer>>(){}.getType());
     }
 
     public HttpResult<Integer> addDishToOrder(int deskid, String orders){
@@ -223,11 +217,10 @@ public class HttpOperator {
             return result;
 
         }
-        HttpResult<Integer> result = gson.fromJson(response.get().toString(), new TypeToken<HttpResult<Integer>>(){}.getType());
-        return result;
+        return gson.fromJson(response.get().toString(), new TypeToken<HttpResult<Integer>>(){}.getType());
     }
 
-    public void uploadErrorLog(File file, String machineCode) throws FileNotFoundException {
+    public void uploadErrorLog(File file, String machineCode) {
         int key = 0;// the key of filelist;
         UploadErrorLogListener listener = new UploadErrorLogListener(mainActivity);
         Request<JSONObject> request = NoHttp.createJsonObjectRequest(InstantValue.URL_TOMCAT + "/common/uploaderrorlog", RequestMethod.POST);
