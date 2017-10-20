@@ -173,6 +173,8 @@ public class IOOperator {
             } else {
                 CommonTool.popupToast(mainActivity,"There is not error log now.", Toast.LENGTH_LONG);
             }
+        } else {
+            CommonTool.popupToast(mainActivity,"The log directory does not exist now.", Toast.LENGTH_LONG);
         }
     }
 }
