@@ -153,9 +153,10 @@ public class HttpOperator {
      * @return "AVAILABLE": order is available; "OCCUPIED": there is an order already on this desk; other result for exception;
      */
     public String checkDeskStatus(String deskName){
-        Request<JSONObject> request = NoHttp.createJsonObjectRequest(InstantValue.URL_TOMCAT + "/indent/queryindent", RequestMethod.GET);
+        Request<JSONObject> request = NoHttp.createJsonObjectRequest(InstantValue.URL_TOMCAT + "/indent/queryindent", RequestMethod.POST);
         request.add("deskname", deskName);
         request.add("status", "Unpaid");
+//        request.setContentType("UTF-8");
         Response<JSONObject> response = NoHttp.startRequestSync(request);
         if (response.getException() != null){
             return response.getException().getMessage();

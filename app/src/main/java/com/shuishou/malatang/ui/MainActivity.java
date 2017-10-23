@@ -269,7 +269,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         JSONArray ja = new JSONArray();
         JSONObject jo = new JSONObject();
         jo.put("id", dish.getId());
-        jo.put("amount", Integer.parseInt(txtWeight.getText().toString()));
+        jo.put("amount", "1");
+        jo.put("weight", txtWeight.getText().toString());
 //            jo.put("addtionalRequirements", cf.getAdditionalRequirements());
         ja.put(jo);
         return ja;

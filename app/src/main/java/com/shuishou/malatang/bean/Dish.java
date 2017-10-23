@@ -1,6 +1,5 @@
 package com.shuishou.malatang.bean;
 
-
 import java.io.Serializable;
 
 /**
@@ -34,6 +33,7 @@ public class Dish implements Serializable{
 
     private boolean autoMergeWhileChoose = true;
 
+    private int purchaseType;
 
     public Dish(){
 

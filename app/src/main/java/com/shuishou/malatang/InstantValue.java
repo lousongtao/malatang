@@ -25,4 +25,7 @@ public final class InstantValue {
     public static final String FILE_SERVERURL = "/data/data/com.shuishou.malatang/serverconfig";
     public static final String FILE_DISHNAME = "/data/data/com.shuishou.malatang/dishnameconfig";
     public static final String ERRORLOGPATH = "/data/data/com.shuishou.malatang/errorlog/";
+
+    public static final byte DISH_PURCHASETYPE_UNIT = 1;
+    public static final byte DISH_PURCHASETYPE_WEIGHT = 2;
 }
