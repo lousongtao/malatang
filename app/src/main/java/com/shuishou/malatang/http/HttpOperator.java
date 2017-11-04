@@ -27,6 +27,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 
 /**
  * Created by Administrator on 2017/6/9.
@@ -64,6 +65,7 @@ public class HttpOperator {
         @Override
         public void onFailed(int what, Response<JSONObject> response) {
             Log.e("Http failed", "what = "+ what + "\nresponse = "+ response.get());
+            MainActivity.LOG.error("Http failed, what = "+ what + "\nresponse = "+ response.get());
             String msg = "";
             switch (what){
                 case WHAT_VALUE_QUERYCONFIRMCODE :
@@ -98,21 +100,24 @@ public class HttpOperator {
 
     private void doResponseQueryConfirmCode(Response<JSONObject> response){
         if (response.getException() != null){
-            Log.e(logTag, "doResponseQueryMenu: " + response.getException().getMessage() );
-            sendErrorMessageToToast("Http:doResponseQueryMenu: " + response.getException().getMessage());
+            Log.e(logTag, "doResponseQueryConfirmCode: " + response.getException().getMessage() );
+            MainActivity.LOG.error("Exception occur in doResponseQueryConfirmCode: " + response.getException().getMessage());
+            sendErrorMessageToToast("Http:doResponseQueryConfirmCode: " + response.getException().getMessage());
             return;
         }
-        HttpResult<String> result = gson.fromJson(response.get().toString(), new TypeToken<HttpResult<String>>(){}.getType());
+        HttpResult<HashMap> result = gson.fromJson(response.get().toString(), new TypeToken<HttpResult<HashMap>>(){}.getType());
         if (result.success){
-            mainActivity.setConfirmCode(result.data);
+            mainActivity.setConfirmCode(result.data.get(InstantValue.CONFIGS_CONFIRMCODE).toString());
         } else {
-            Log.e(logTag, "doResponseQueryMenu: get FALSE for query confirm code");
+            Log.e(logTag, "doResponseQueryConfirmCode: get FALSE for query confirm code");
+            MainActivity.LOG.error("doResponseQueryConfirmCode: get FALSE for query confirm code");
         }
     }
 
     private void doResponseQueryDesk(Response<JSONObject> response){
         if (response.getException() != null){
             Log.e(logTag, "doResponseQueryDesk: " + response.getException().getMessage() );
+            MainActivity.LOG.error("Exception occur in doResponseQueryDesk: " + response.getException().getMessage());
             sendErrorMessageToToast("Http:doResponseQueryDesk: " + response.getException().getMessage());
             return;
         }
@@ -163,6 +168,7 @@ public class HttpOperator {
         }
         if (response.get() == null) {
             Log.e(logTag, "Error occur while check desk available for making order. response.get() is null.");
+            MainActivity.LOG.error("Error occur while check desk available for making order. response.get() is null.");
             return "Error occur while check desk available for making order. response.get() is null";
         }
         HttpResult<ArrayList<Indent>> result = gson.fromJson(response.get().toString(), new TypeToken<HttpResult<ArrayList<Indent>>>(){}.getType());
@@ -193,6 +199,7 @@ public class HttpOperator {
         }
         if (response.get() == null) {
             Log.e(logTag, "Error occur while make order. response.get() is null.");
+            MainActivity.LOG.error("Error occur while make order. response.get() is null.");
             HttpResult<Integer> result = new HttpResult<>();
             result.result = "Error occur while make order. response.get() is null";
             return result;
@@ -213,6 +220,7 @@ public class HttpOperator {
         }
         if (response.get() == null) {
             Log.e(logTag, "Error occur while add dish to order. response.get() is null.");
+            MainActivity.LOG.error("Error occur while add dish to order. response.get() is null.");
             HttpResult<Integer> result = new HttpResult<>();
             result.result = "Error occur while add dish to order. response.get() is null";
             return result;
@@ -238,10 +246,12 @@ public class HttpOperator {
         Response<JSONObject> response = NoHttp.startRequestSync(request);
         if (response.getException() != null ){
             Log.e(logTag, response.getException().getMessage());
+            MainActivity.LOG.error("Exception occur in getDishByNameSync "+response.getException().getMessage());
             return null;
         }
         if (response.get() == null){
             Log.e(logTag, "Error occur while get dish by name " + dishName + ". response.get() is null.");
+            MainActivity.LOG.error("Error occur while get dish by name " + dishName + ". response.get() is null.");
             return null;
         }
         HttpResult<Dish> result = gson.fromJson(response.get().toString(), new TypeToken<HttpResult<Dish>>(){}.getType());
@@ -249,7 +259,7 @@ public class HttpOperator {
     }
 
     public void queryConfirmCode(){
-        Request<JSONObject> request = NoHttp.createJsonObjectRequest(InstantValue.URL_TOMCAT + "/common/getconfirmcode", RequestMethod.GET);
+        Request<JSONObject> request = NoHttp.createJsonObjectRequest(InstantValue.URL_TOMCAT + "/common/queryconfigmap", RequestMethod.GET);
         requestQueue.add(WHAT_VALUE_QUERYCONFIRMCODE, request, responseListener);
     }
 }

@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.shuishou.malatang.InstantValue;
 import com.shuishou.malatang.R;
 import com.shuishou.malatang.bean.Dish;
 import com.shuishou.malatang.io.IOOperator;
@@ -80,7 +81,7 @@ class SaveDishDialog {
     }
 
     private void loadDishName(){
-        String name = IOOperator.loadDishName();
+        String name = IOOperator.loadDishName(InstantValue.FILE_DISHNAME);
         if (name != null)
             txtDishName.setText(name);
     }

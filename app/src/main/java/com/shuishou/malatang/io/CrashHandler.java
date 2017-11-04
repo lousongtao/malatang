@@ -170,11 +170,14 @@ public class CrashHandler implements UncaughtExceptionHandler {
             try {
                 File dir = new File(InstantValue.ERRORLOGPATH);
                 Log.i("CrashHandler", dir.toString());
+                boolean dirExist = true;
                 if (!dir.exists())
-                    dir.mkdir();
-                FileOutputStream fos = new FileOutputStream(new File(dir,fileName));
-                fos.write(sb.toString().getBytes());
-                fos.close();
+                    dirExist = dir.mkdir();
+                if (dirExist){
+                    FileOutputStream fos = new FileOutputStream(new File(dir,fileName));
+                    fos.write(sb.toString().getBytes());
+                    fos.close();
+                }
                 return fileName;
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

@@ -3,24 +3,29 @@ package com.shuishou.malatang.ui;
 import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -28,12 +33,12 @@ import android.widget.Toast;
 
 import com.shuishou.malatang.InstantValue;
 import com.shuishou.malatang.R;
+import com.shuishou.malatang.bean.ChoosedFood;
 import com.shuishou.malatang.bean.Desk;
 import com.shuishou.malatang.bean.Dish;
 import com.shuishou.malatang.bean.HttpResult;
 import com.shuishou.malatang.db.DBOperator;
 import com.shuishou.malatang.http.HttpOperator;
-import com.shuishou.malatang.io.CrashHandler;
 import com.shuishou.malatang.io.IOOperator;
 import com.shuishou.malatang.utils.CommonTool;
 import com.yanzhenjie.nohttp.Logger;
@@ -42,19 +47,20 @@ import com.yanzhenjie.nohttp.NoHttp;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+
+import pl.brightinventions.slf4android.LoggerConfiguration;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+    public static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MainActivity.class.getSimpleName());
+
     private Dish dish;
     private ArrayList<Desk> desks;
     private ArrayList<DeskIcon> deskIconList = new ArrayList<>();
@@ -63,37 +69,81 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private HttpOperator httpOperator;
     private DBOperator dbOperator;
+
+    private ChoosedFoodAdapter choosedFoodAdapter;
+    private ArrayList<ChoosedFood> choosedFoodList = new ArrayList<>();
+
     private TextView tvRefreshData;
     private TextView tvServerURL;
     private TextView tvDishName;
     private TextView tvUploadErrorLog;
+    private TextView tvExit;
     private Button btnMakeOrder;
+    private Button btnAddToList;
     private Button btnGetWeight;
     private TextView tvPrice;
     private EditText txtWeight;
     private TableLayout deskAreaLayout;
+    private SwitchCompat btnNochilli;
+    private SwitchCompat btnLittlechilli;
+    private SwitchCompat btnMiddlechilli;
+    private SwitchCompat btnMorechilli;
+    private SwitchCompat btnAddPeanut;
+    private SwitchCompat btnAddOnion;
+    private RadioButton rbNo1;
+    private RadioButton rbNo2;
+    private RadioButton rbNo3;
+    private RadioButton rbNo4;
+    private RadioButton rbNo5;
+    private RadioButton rbNo6;
+    private RadioButton rbNo7;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-
+        ListView lvChoosedFood = (ListView) findViewById(R.id.list_choosedfood);
+        choosedFoodAdapter = new ChoosedFoodAdapter(this, R.layout.choosedfood_layout, choosedFoodList);
+        lvChoosedFood.setAdapter(choosedFoodAdapter);
         tvRefreshData = (TextView)findViewById(R.id.drawermenu_refreshdata);
         tvServerURL = (TextView)findViewById(R.id.drawermenu_serverurl);
         tvUploadErrorLog = (TextView)findViewById(R.id.drawermenu_uploaderrorlog);
+        tvExit = (TextView)findViewById(R.id.drawermenu_exit);
         tvDishName = (TextView)findViewById(R.id.drawmenu_dishname);
         btnMakeOrder = (Button)findViewById(R.id.btnMakeOrder);
+        btnAddToList = (Button)findViewById(R.id.btnAddToList);
         btnGetWeight = (Button)findViewById(R.id.btnGetWeight);
         txtWeight = (EditText)findViewById(R.id.txtWeight);
         deskAreaLayout = (TableLayout)findViewById(R.id.deskAreaLayout);
         tvPrice = (TextView)findViewById(R.id.tvPrice);
+        btnNochilli = (SwitchCompat)findViewById(R.id.btnNochilli);
+        btnLittlechilli = (SwitchCompat)findViewById(R.id.btnLittlechilli);
+        btnMiddlechilli = (SwitchCompat)findViewById(R.id.btnMiddlechilli);
+        btnMorechilli = (SwitchCompat)findViewById(R.id.btnMorechilli);
+        btnAddPeanut = (SwitchCompat)findViewById(R.id.btnAddPeanut);
+        btnAddOnion = (SwitchCompat)findViewById(R.id.btnAddOnion);
+        rbNo1 = (RadioButton)findViewById(R.id.rb1);
+        rbNo2 = (RadioButton)findViewById(R.id.rb2);
+        rbNo3 = (RadioButton)findViewById(R.id.rb3);
+        rbNo4 = (RadioButton)findViewById(R.id.rb4);
+        rbNo5 = (RadioButton)findViewById(R.id.rb5);
+        rbNo6 = (RadioButton)findViewById(R.id.rb6);
+        rbNo7 = (RadioButton)findViewById(R.id.rb7);
+
         tvUploadErrorLog.setOnClickListener(this);
+        btnAddToList.setOnClickListener(this);
         tvRefreshData.setOnClickListener(this);
+        tvExit.setOnClickListener(this);
         tvDishName.setOnClickListener(this);
         tvServerURL.setOnClickListener(this);
         btnGetWeight.setOnClickListener(this);
         btnMakeOrder.setOnClickListener(this);
+        btnNochilli.setOnClickListener(this);
+        btnLittlechilli.setOnClickListener(this);
+        btnMiddlechilli.setOnClickListener(this);
+        btnMorechilli.setOnClickListener(this);
+
         txtWeight.addTextChangedListener(new TextWatcher(){
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -106,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (s == null || s.length() == 0){
                     tvPrice.setText(InstantValue.NULLSTRING);
                 } else if (dish != null) {
-                    tvPrice.setText(InstantValue.PRICE + String.format(InstantValue.FORMAT_DOUBLE_2DECIMAL, calculatePrice(Integer.parseInt(s.toString()))));
+                    tvPrice.setText(InstantValue.PRICE + String.format(InstantValue.FORMAT_DOUBLE_2DECIMAL, calculatePrice(Double.parseDouble(s.toString()))));
                 }
             }
         });
@@ -115,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Logger.setDebug(true);
         Logger.setTag("malatang:nohttp");
 
-        InstantValue.URL_TOMCAT = IOOperator.loadServerURL();
+        InstantValue.URL_TOMCAT = IOOperator.loadServerURL(InstantValue.FILE_SERVERURL);
         httpOperator = new HttpOperator(this);
         dbOperator = new DBOperator(this);
 
@@ -127,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buildDesks();
     }
 
-    private double calculatePrice(int weight){
+    private double calculatePrice(double weight){
         return dish.getPrice() * weight;
     }
 
@@ -140,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void run() {
                 if (InstantValue.URL_TOMCAT != null && InstantValue.URL_TOMCAT.length() > 0)
-                    dish = httpOperator.getDishByNameSync(IOOperator.loadDishName());
+                    dish = httpOperator.getDishByNameSync(IOOperator.loadDishName(InstantValue.FILE_DISHNAME));
             }
         }.start();
     }
@@ -154,17 +204,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int screenWidth = displayMetrics.widthPixels;
 
         TableRow.LayoutParams trlp = new TableRow.LayoutParams();
-        trlp.topMargin = 10;
-        trlp.leftMargin = 10;
-        int width = (screenWidth - InstantValue.DESKCELLAMOUNTPERROW * trlp.leftMargin)/InstantValue.DESKCELLAMOUNTPERROW;
-        int height = width;
+        trlp.topMargin = 5;
+        trlp.leftMargin = 5;
+//        int width = (screenWidth - InstantValue.DESKCELLAMOUNTPERROW * trlp.leftMargin)/InstantValue.DESKCELLAMOUNTPERROW;
         TableRow tr = null;
         for (int i = 0; i < desks.size(); i++) {
             if (i % InstantValue.DESKCELLAMOUNTPERROW == 0){
                 tr = new TableRow(this);
                 deskAreaLayout.addView(tr);
             }
-            DeskIcon di = new DeskIcon(this, desks.get(i), width, height);
+            DeskIcon di = new DeskIcon(this, desks.get(i), InstantValue.DESKCELLWIDTH, InstantValue.DESKCELLHEIGHT);
             deskIconList.add(di);
             tr.addView(di, trlp);
         }
@@ -174,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void setDish(Dish dish){
         this.dish = dish;
-        IOOperator.saveDishName(dish.getEnglishName());
+        IOOperator.saveDishName(InstantValue.FILE_DISHNAME, dish.getEnglishName());
     }
     public DBOperator getDbOperator(){
         return dbOperator;
@@ -200,19 +249,86 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (v == tvServerURL){
             SaveServerURLDialog dlg = new SaveServerURLDialog(MainActivity.this);
             dlg.showDialog();
+        } else if (v == tvExit){
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Confirm")
+                    .setIcon(R.drawable.info)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            MainActivity.this.finish();
+                        }
+                    })
+                    .setNegativeButton("No", null);
+            builder.create().show();
         } else if (v == btnGetWeight){
 
+        } else if (v == btnAddToList){
+            doAddToList();
         } else if (v == btnMakeOrder){
             doMakeOrder();
         } else if (v == tvDishName){
             SaveDishDialog dlg = new SaveDishDialog(MainActivity.this);
             dlg.showDialog();
+        } else if (v == btnNochilli){
+            btnNochilli.setChecked(true);
+            btnLittlechilli.setChecked(false);
+            btnMiddlechilli.setChecked(false);
+            btnMorechilli.setChecked(false);
+        } else if (v == btnLittlechilli){
+            btnNochilli.setChecked(false);
+            btnLittlechilli.setChecked(true);
+            btnMiddlechilli.setChecked(false);
+            btnMorechilli.setChecked(false);
+        } else if (v == btnMiddlechilli){
+            btnNochilli.setChecked(false);
+            btnLittlechilli.setChecked(false);
+            btnMiddlechilli.setChecked(true);
+            btnMorechilli.setChecked(false);
+        } else if (v == btnMorechilli){
+            btnNochilli.setChecked(false);
+            btnLittlechilli.setChecked(false);
+            btnMiddlechilli.setChecked(false);
+            btnMorechilli.setChecked(true);
         }
     }
 
-    private void doMakeOrder(){
+    private void doAddToList(){
         if (txtWeight.getText() == null || txtWeight.getText().length() == 0){
             Toast.makeText(this, "请输入重量!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String no = getNo();
+        for(ChoosedFood cf : choosedFoodList){
+            if (cf.getNo().equals(no)){
+                Toast.makeText(this, "该编号已经存在!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+        StringBuffer sb = new StringBuffer();
+        if (btnNochilli.isChecked())
+            sb.append("清汤 ");
+        if (btnLittlechilli.isChecked())
+            sb.append("微辣 ");
+        if (btnMiddlechilli.isChecked())
+            sb.append("中辣 ");
+        if (btnMorechilli.isChecked())
+            sb.append("重辣 ");
+        if (btnAddPeanut.isChecked())
+            sb.append("加花生 ");
+        if (btnAddOnion.isChecked())
+            sb.append("加葱花 ");
+        ChoosedFood cf = new ChoosedFood(no, dish.getPrice() * Double.parseDouble(txtWeight.getText().toString()),
+                Double.parseDouble(txtWeight.getText().toString()), sb.toString());
+        choosedFoodList.add(cf);
+        choosedFoodAdapter.notifyDataSetChanged();
+        txtWeight.setText(InstantValue.NULLSTRING);
+    }
+
+    private void doMakeOrder(){
+        if (choosedFoodList.isEmpty()){
+            Toast.makeText(this, "当前列表为空!", Toast.LENGTH_SHORT).show();
             return;
         }
         DeskIcon choosedDeskIcon = null;
@@ -263,16 +379,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         "Something wrong happened while making order! \n\nError message : " + result.result));
             }
         }
+        choosedFoodList.clear();
+        choosedFoodAdapter.notifyDataSetChanged();
     }
 
     private JSONArray generateOrderJson() throws JSONException {
         JSONArray ja = new JSONArray();
-        JSONObject jo = new JSONObject();
-        jo.put("id", dish.getId());
-        jo.put("amount", "1");
-        jo.put("weight", txtWeight.getText().toString());
-//            jo.put("addtionalRequirements", cf.getAdditionalRequirements());
-        ja.put(jo);
+        for (int i = 0; i < choosedFoodList.size(); i++) {
+            ChoosedFood cf = choosedFoodList.get(i);
+            JSONObject jo = new JSONObject();
+            jo.put("id", dish.getId());
+            jo.put("amount", "1");
+            jo.put("weight", String.valueOf(cf.getWeight()));
+            jo.put("additionalRequirements", "No" + cf.getNo()+ " " + cf.getRequirement());
+            ja.put(jo);
+        }
+
         return ja;
     }
 
@@ -300,6 +422,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }.start();
         }
+        choosedFoodList.clear();
+        choosedFoodAdapter.notifyDataSetChanged();
     }
 
     public void onFinishMakeOrder(String title, String message){
@@ -323,6 +447,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CommonTool.popupWarnDialog(this, R.drawable.info, "成功", "数据同步成功.");
     }
 
+    public void removeChoosedFoodFromList(ChoosedFood cf){
+        choosedFoodList.remove(cf);
+        choosedFoodAdapter.notifyDataSetChanged();
+    }
+
+    private String getNo(){
+        if (rbNo1.isChecked())
+            return "1";
+        if (rbNo2.isChecked())
+            return "2";
+        if (rbNo3.isChecked())
+            return "3";
+        if (rbNo4.isChecked())
+            return "4";
+        if (rbNo5.isChecked())
+            return "5";
+        if (rbNo6.isChecked())
+            return "6";
+        if (rbNo7.isChecked())
+            return "7";
+        return "";
+    }
 
     public void setDesk(ArrayList<Desk> desks){
         this.desks = desks;

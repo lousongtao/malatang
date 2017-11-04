@@ -60,7 +60,7 @@ class SaveServerURLDialog {
     }
 
     private void loadServerURL(){
-        String url = IOOperator.loadServerURL();
+        String url = IOOperator.loadServerURL(InstantValue.FILE_SERVERURL);
         if (url != null)
             txtServerURL.setText(url);
     }
@@ -71,7 +71,7 @@ class SaveServerURLDialog {
             Toast.makeText(mainActivity, "Please input server URL.", Toast.LENGTH_LONG).show();
             return;
         }
-        IOOperator.saveServerURL(url);
+        IOOperator.saveServerURL(InstantValue.FILE_SERVERURL, url);
         InstantValue.URL_TOMCAT = url;
         dlg.dismiss();
     }

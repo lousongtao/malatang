@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.zip.ZipEntry;
@@ -31,14 +32,15 @@ import java.util.zip.ZipOutputStream;
 
 public class IOOperator {
 
-    public static void saveServerURL(String url){
+    public static void saveServerURL(String fileName, String url){
         FileWriter writer = null;
         try {
-            writer = new FileWriter(InstantValue.FILE_SERVERURL);
+            writer = new FileWriter(fileName);
             writer.write(url);
             writer.close();
         } catch (IOException e) {
             Log.e("IOException", "error to save ServerURL +\n"+e.getStackTrace());
+            MainActivity.LOG.error("error to save ServerURL", e);
         } finally {
             try {
                 if (writer != null)
@@ -47,14 +49,15 @@ public class IOOperator {
         }
     }
 
-    public static void saveDishName(String dishName){
+    public static void saveDishName(String fileName, String dishName){
         FileWriter writer = null;
         try {
-            writer = new FileWriter(InstantValue.FILE_DISHNAME);
+            writer = new FileWriter(fileName);
             writer.write(dishName);
             writer.close();
         } catch (IOException e) {
             Log.e("IOException", "error to save DishName +\n"+e.getStackTrace());
+            MainActivity.LOG.error("error to save DishName", e);
         } finally {
             try {
                 if (writer != null)
@@ -63,8 +66,8 @@ public class IOOperator {
         }
     }
 
-    public static String loadServerURL(){
-        File file = new File(InstantValue.FILE_SERVERURL);
+    public static String loadServerURL(String fileName){
+        File file = new File(fileName);
         if (!file.exists())
             return "";
         BufferedReader in = null;
@@ -75,6 +78,7 @@ public class IOOperator {
             e.printStackTrace();
         } catch (IOException e) {
             Log.e("IOException", "error to load ServerURL +\n"+e.getStackTrace());
+            MainActivity.LOG.error("error to load ServerURL", e);
         } finally {
             try {
                 if (in != null)
@@ -84,8 +88,8 @@ public class IOOperator {
         return null;
     }
 
-    public static String loadDishName(){
-        File file = new File(InstantValue.FILE_DISHNAME);
+    public static String loadDishName(String fileName){
+        File file = new File(fileName);
         if (!file.exists())
             return "";
         BufferedReader in = null;
@@ -96,6 +100,7 @@ public class IOOperator {
             e.printStackTrace();
         } catch (IOException e) {
             Log.e("IOException", "error to load Dish name from local file +\n"+e.getStackTrace());
+            MainActivity.LOG.error("error to load Dish name from local file", e);
         } finally {
             try {
                 if (in != null)
@@ -111,6 +116,7 @@ public class IOOperator {
      * 3. load finish successfully, then delete this file.
      */
     public static void onUploadErrorLog(MainActivity mainActivity){
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         File logdir = new File(InstantValue.ERRORLOGPATH);
         if (logdir.exists() && logdir.isDirectory()) {
             File[] files = logdir.listFiles();
@@ -132,7 +138,7 @@ public class IOOperator {
             }
             files = logdir.listFiles();
             if (files != null && files.length > 0) {
-                String zipfilename = InstantValue.ERRORLOGPATH + "/logs-" +System.currentTimeMillis()+ ".zip";
+                String zipfilename = InstantValue.ERRORLOGPATH + "/logs-" + format.format(new Date()) +"-"+System.currentTimeMillis()+ ".zip";
                 //zip log files
                 try {
                     BufferedInputStream origin = null;

@@ -1,6 +1,7 @@
 package com.shuishou.malatang.db;
 
 import com.litesuits.orm.LiteOrm;
+import com.litesuits.orm.db.assit.QueryBuilder;
 import com.shuishou.malatang.bean.Desk;
 import com.shuishou.malatang.ui.MainActivity;
 
@@ -50,7 +51,7 @@ public class DBOperator {
     }
 
     public ArrayList<Desk> queryDesks(){
-        return liteOrm.query(Desk.class);
+        return liteOrm.query(new QueryBuilder<Desk>(Desk.class).appendOrderAscBy("sequence"));
     }
 
     public LiteOrm getLiteOrm(){

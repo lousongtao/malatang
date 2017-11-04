@@ -14,23 +14,186 @@
         android:orientation="vertical">
 
 
-        <TableLayout
-            android:id="@+id/deskAreaLayout"
-            android:layout_width="match_parent"
-            android:layout_height="500dp"
-            android:background="@color/color_OrangeTheme_ChoosedFoodBackgroundArea">
-
-        </TableLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="500dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TableLayout
+                    android:id="@+id/deskAreaLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:background="@color/color_OrangeTheme_ChoosedFoodBackgroundArea">
+
+                </TableLayout>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1">
+
+
+                    <android.support.v7.widget.SwitchCompat
+                        android:id="@+id/btnNochilli"
+                        android:layout_width="130dp"
+                        android:layout_height="80dp"
+                        android:layout_marginStart="5dp"
+                        android:text="清汤"
+                        android:textSize="42sp"
+                        android:theme="@style/SCBSwitch" />
+
+                        <android.support.v7.widget.SwitchCompat
+                            android:id="@+id/btnLittlechilli"
+                            android:layout_width="130dp"
+                            android:layout_height="80dp"
+                            android:layout_marginStart="205dp"
+                            android:checked="true"
+                            android:text="微辣"
+                            android:textSize="42sp"
+                            android:theme="@style/SCBSwitch" />
+
+                        <android.support.v7.widget.SwitchCompat
+                            android:id="@+id/btnMiddlechilli"
+                            android:layout_width="130dp"
+                            android:layout_height="80dp"
+                            android:layout_marginStart="405dp"
+                            android:text="中辣"
+                            android:textSize="42sp"
+                            android:theme="@style/SCBSwitch" />
+
+                        <android.support.v7.widget.SwitchCompat
+                            android:id="@+id/btnMorechilli"
+                            android:layout_width="130dp"
+                            android:layout_height="80dp"
+                            android:layout_marginStart="605dp"
+                            android:text="重辣"
+                            android:textSize="42sp"
+                            android:theme="@style/SCBSwitch" />
+
+
+                    <android.support.v7.widget.SwitchCompat
+                        android:id="@+id/btnAddPeanut"
+                        android:layout_width="180dp"
+                        android:layout_height="80dp"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="90dp"
+                        android:checked="true"
+                        android:text="加花生"
+                        android:textSize="42sp"
+                        android:theme="@style/SCBSwitch" />
+
+                    <android.support.v7.widget.SwitchCompat
+                        android:id="@+id/btnAddOnion"
+                        android:layout_width="180dp"
+                        android:layout_height="80dp"
+                        android:layout_marginStart="205dp"
+                        android:layout_marginTop="90dp"
+                        android:checked="true"
+                        android:text="加葱花"
+                        android:textSize="42sp"
+                        android:theme="@style/SCBSwitch" />
+
+                    <TextView
+                        android:id="@+id/textView4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="180dp"
+                        android:text="小编号"
+                        android:textSize="42sp" />
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="140dp"
+                        android:layout_marginTop="180dp"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rb1"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="1"
+                            android:textSize="42sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb2"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="30dp"
+                            android:text="2"
+                            android:textSize="42sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb3"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="30dp"
+                            android:text="3"
+                            android:textSize="42sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb4"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="30dp"
+                            android:text="4"
+                            android:textSize="42sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb5"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="30dp"
+                            android:text="5"
+                            android:textSize="42sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb6"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="30dp"
+                            android:text="6"
+                            android:textSize="42sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb7"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="30dp"
+                            android:text="7"
+                            android:textSize="42sp" />
+                    </RadioGroup>
+
+
+                </FrameLayout>
+
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/list_choosedfood"
+                android:layout_width="400dp"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/textView"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="100dp"
+                android:layout_height="110dp"
+                android:layout_marginLeft="5dp"
                 android:gravity="center_vertical"
                 android:text="重量"
                 android:textSize="42sp" />
@@ -38,37 +201,48 @@
             <EditText
                 android:id="@+id/txtWeight"
                 android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="30dp"
+                android:layout_height="110dp"
+                android:layout_marginStart="110dp"
                 android:ems="10"
                 android:inputType="number"
-                android:textSize="36sp" />
+                android:textSize="42sp" />
 
             <Button
                 android:id="@+id/btnGetWeight"
                 android:layout_width="200dp"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="30dp"
+                android:layout_height="110dp"
+                android:layout_marginLeft="320dp"
                 android:text="取重"
+                android:textSize="36sp" />
+
+
+            <TextView
+                android:id="@+id/tvPrice"
+                android:layout_width="400dp"
+                android:layout_height="110dp"
+                android:layout_marginStart="540dp"
+                android:gravity="center_vertical"
+                android:textSize="42sp" />
+            <Button
+                android:id="@+id/btnAddToList"
+                android:layout_width="200dp"
+                android:layout_height="110dp"
+                android:layout_marginLeft="540dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="120dp"
+                android:text="确认"
                 android:textSize="36sp" />
 
             <Button
                 android:id="@+id/btnMakeOrder"
                 android:layout_width="200dp"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="30dp"
+                android:layout_height="110dp"
+                android:layout_marginStart="250dp"
+                android:layout_marginTop="120dp"
                 android:text="下单"
                 android:textSize="36sp" />
 
-            <TextView
-                android:id="@+id/tvPrice"
-                android:layout_width="200dp"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="30dp"
-                android:gravity="center_vertical"
-                android:textSize="42sp" />
-
-        </LinearLayout>
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -108,6 +282,14 @@
             android:layout_height="80dp"
             android:paddingTop="20dp"
             android:text="上报异常日志"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/drawermenu_exit"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:paddingTop="20dp"
+            android:text="Exit"
             android:textSize="30sp" />
     </LinearLayout>
 
