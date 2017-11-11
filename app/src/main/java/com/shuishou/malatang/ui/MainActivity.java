@@ -63,8 +63,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Dish dish;
     private ArrayList<Desk> desks;
-    private ArrayList<DeskIcon> deskIconList = new ArrayList<>();
-    private DeskClickListener deskClickListener = new DeskClickListener();
+    private ArrayList<DeskCell> deskCellList = new ArrayList<>();
+
     private String confirmCode;
 
     private HttpOperator httpOperator;
@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RadioButton rbNo5;
     private RadioButton rbNo6;
     private RadioButton rbNo7;
+    private EditText txNoManual;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -130,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rbNo5 = (RadioButton)findViewById(R.id.rb5);
         rbNo6 = (RadioButton)findViewById(R.id.rb6);
         rbNo7 = (RadioButton)findViewById(R.id.rb7);
+        txNoManual = (EditText)findViewById(R.id.txtOtherNo);
 
         tvUploadErrorLog.setOnClickListener(this);
         btnAddToList.setOnClickListener(this);
@@ -213,18 +215,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 tr = new TableRow(this);
                 deskAreaLayout.addView(tr);
             }
-            DeskIcon di = new DeskIcon(this, desks.get(i), InstantValue.DESKCELLWIDTH, InstantValue.DESKCELLHEIGHT);
-            deskIconList.add(di);
+            DeskCell di = new DeskCell(this, desks.get(i), InstantValue.DESKCELLWIDTH, InstantValue.DESKCELLHEIGHT);
+            deskCellList.add(di);
             tr.addView(di, trlp);
         }
     }
 
-
-
-    public void setDish(Dish dish){
-        this.dish = dish;
-        IOOperator.saveDishName(InstantValue.FILE_DISHNAME, dish.getEnglishName());
-    }
     public DBOperator getDbOperator(){
         return dbOperator;
     }
@@ -237,8 +233,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dbOperator.clearDesk();
         dbOperator.saveObjectsByCascade(desks);
     }
-
-
 
     @Override
     public void onClick(View v) {
@@ -320,10 +314,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (btnAddOnion.isChecked())
             sb.append("加葱花 ");
         ChoosedFood cf = new ChoosedFood(no, dish.getPrice() * Double.parseDouble(txtWeight.getText().toString()),
-                Double.parseDouble(txtWeight.getText().toString()), sb.toString());
+                Double.parseDouble(txtWeight.getText().toString()), sb.toString(), true);
         choosedFoodList.add(cf);
         choosedFoodAdapter.notifyDataSetChanged();
         txtWeight.setText(InstantValue.NULLSTRING);
+        txNoManual.setText(InstantValue.NULLSTRING);
     }
 
     private void doMakeOrder(){
@@ -331,8 +326,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "当前列表为空!", Toast.LENGTH_SHORT).show();
             return;
         }
-        DeskIcon choosedDeskIcon = null;
-        for (DeskIcon di: deskIconList) {
+        DeskCell choosedDeskIcon = null;
+        for (DeskCell di: deskCellList) {
             if (di.isChoosed()){
                 choosedDeskIcon = di;
                 break;
@@ -374,19 +369,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             HttpResult<Integer> result = httpOperator.makeOrder(confirmCode, os.toString(), deskid, 0);
             if (result.success){
                 handler.sendMessage(CommonTool.buildMessage(MESSAGEWHAT_MAKEORDERSUCCESS, result.data));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        choosedFoodList.clear();
+                        choosedFoodAdapter.notifyDataSetChanged();
+                    }
+                });
             } else {
                 handler.sendMessage(CommonTool.buildMessage(MESSAGEWHAT_ERRORDIALOG,
                         "Something wrong happened while making order! \n\nError message : " + result.result));
             }
         }
-        choosedFoodList.clear();
-        choosedFoodAdapter.notifyDataSetChanged();
     }
 
     private JSONArray generateOrderJson() throws JSONException {
         JSONArray ja = new JSONArray();
         for (int i = 0; i < choosedFoodList.size(); i++) {
             ChoosedFood cf = choosedFoodList.get(i);
+            if (!cf.isNew())
+                continue;
             JSONObject jo = new JSONObject();
             jo.put("id", dish.getId());
             jo.put("amount", "1");
@@ -428,7 +430,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void onFinishMakeOrder(String title, String message){
         //clear desks
-        for (DeskIcon di: deskIconList) {
+        for (DeskCell di: deskCellList) {
             di.setChoosed(false);
         }
         tvPrice.setText(InstantValue.NULLSTRING);
@@ -452,7 +454,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         choosedFoodAdapter.notifyDataSetChanged();
     }
 
+    public void setChoosedFoodList(ArrayList<ChoosedFood> list){
+        choosedFoodList.clear();
+        choosedFoodList.addAll(list);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                choosedFoodAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
     private String getNo(){
+        if (txNoManual.getText() != null && txNoManual.getText().toString().trim().length() > 0)
+            return txNoManual.getText().toString();
         if (rbNo1.isChecked())
             return "1";
         if (rbNo2.isChecked())
@@ -470,6 +485,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return "";
     }
 
+    public ArrayList<DeskCell> getDeskCellList() {
+        return deskCellList;
+    }
+
+    public void setDeskCellList(ArrayList<DeskCell> deskCellList) {
+        this.deskCellList = deskCellList;
+    }
+
     public void setDesk(ArrayList<Desk> desks){
         this.desks = desks;
     }
@@ -484,6 +507,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public String getConfirmCode() {
         return confirmCode;
+    }
+
+    public void setDish(Dish dish){
+        this.dish = dish;
+        IOOperator.saveDishName(InstantValue.FILE_DISHNAME, dish.getEnglishName());
+    }
+
+    public Dish getDish() {
+        return dish;
     }
 
     public void setConfirmCode(String confirmCode) {
@@ -602,53 +634,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    class DeskIcon extends android.support.v7.widget.AppCompatTextView{
-        private Desk desk;
-        private boolean choosed;
-        public DeskIcon(Context context, Desk desk, int width, int height){
-            super(context);
-            this.desk = desk;
-            initDeskUI(width, height);
-        }
 
-        private void initDeskUI(int width, int height){
-            setTextSize(18);
-            setTextColor(Color.BLACK);
-            setBackgroundColor(Color.LTGRAY);
-            setText(desk.getName());
-            setHeight(height);
-            setWidth(width);
-            setOnClickListener(deskClickListener);
-            setEllipsize(TextUtils.TruncateAt.END);
-        }
 
-        public void setChoosed(boolean b){
-            choosed = b;
-            if (b){
-                this.setBackgroundColor(Color.GREEN);
-            } else {
-                this.setBackgroundColor(Color.LTGRAY);
-            }
-        }
-
-        public boolean isChoosed(){
-            return choosed;
-        }
-
-        public Desk getDesk() {
-            return desk;
-        }
-    }
-
-    class DeskClickListener implements View.OnClickListener{
-        @Override
-        public void onClick(View v) {
-            if (v.getClass().getName().equals(DeskIcon.class.getName())){
-                for(DeskIcon di : deskIconList){
-                    di.setChoosed(false);
-                }
-                ((DeskIcon)v).setChoosed(true);
-            }
-        }
-    }
 }

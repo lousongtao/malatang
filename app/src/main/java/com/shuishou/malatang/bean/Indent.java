@@ -1,5 +1,9 @@
 package com.shuishou.malatang.bean;
 
+import com.shuishou.malatang.InstantValue;
+
+import java.util.ArrayList;
+
 /**
  * Created by Administrator on 2017/9/25.
  */
@@ -15,4 +19,5 @@ public class Indent {
     public double paidPrice;
     public byte payWay;
     public int customerAmount;
+    public ArrayList<IndentDetail> items;
 }

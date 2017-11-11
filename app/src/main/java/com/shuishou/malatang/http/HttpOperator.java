@@ -4,13 +4,16 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.shuishou.malatang.InstantValue;
 import com.shuishou.malatang.R;
+import com.shuishou.malatang.bean.ChoosedFood;
 import com.shuishou.malatang.bean.Desk;
 import com.shuishou.malatang.bean.Dish;
 import com.shuishou.malatang.bean.HttpResult;
 import com.shuishou.malatang.bean.Indent;
+import com.shuishou.malatang.bean.IndentDetail;
 import com.shuishou.malatang.ui.MainActivity;
 import com.shuishou.malatang.utils.CommonTool;
 import com.yanzhenjie.nohttp.FileBinary;
@@ -39,6 +42,7 @@ public class HttpOperator {
 
 
     private MainActivity mainActivity;
+    private static final int WHAT_VALUE_QUERYINDENTBYDESK = 1;
     private static final int WHAT_VALUE_QUERYDESK = 4;
     private static final int WHAT_VALUE_QUERYCONFIRMCODE = 6;
 
@@ -58,6 +62,9 @@ public class HttpOperator {
                 case WHAT_VALUE_QUERYCONFIRMCODE:
                     doResponseQueryConfirmCode(response);
                     break;
+                case WHAT_VALUE_QUERYINDENTBYDESK:
+                    doResponseQueryIndentByDesk(response);
+                    break;
                 default:
             }
         }
@@ -74,13 +81,11 @@ public class HttpOperator {
                 case WHAT_VALUE_QUERYDESK :
                     msg = "Failed to load Desk data. Please restart app!";
                     break;
+                case WHAT_VALUE_QUERYINDENTBYDESK:
+                    msg = "Failed to load indent by desk, Please restart app!";
+                    break;
             }
-            new AlertDialog.Builder(mainActivity)
-                    .setIcon(R.drawable.error)
-                    .setTitle("WRONG")
-                    .setMessage(msg)
-                    .setNegativeButton("OK", null)
-                    .create().show();
+            CommonTool.popupWarnDialog(mainActivity, R.drawable.error, "WRONG", msg);
         }
 
         @Override
@@ -134,15 +139,41 @@ public class HttpOperator {
             mainActivity.persistDesk();
             mainActivity.buildDesks();
         } else {
-            new AlertDialog.Builder(mainActivity)
-                    .setIcon(R.drawable.error)
-                    .setTitle("WRONG")
-                    .setMessage("Failed to load Desk data. Please restart app!")
-                    .setNegativeButton("OK", null)
-                    .create().show();
+            CommonTool.popupWarnDialog(mainActivity, R.drawable.error, "WRONG", "Failed to load Desk data. Please restart app!");
         }
     }
 
+    private void doResponseQueryIndentByDesk(Response<JSONObject> response){
+        if (response.getException() != null){
+            Log.e(logTag, "doResponseQueryIndentByDesk: " + response.getException().getMessage() );
+            MainActivity.LOG.error("Exception occur in doResponseQueryIndentByDesk: " + response.getException().getMessage());
+            sendErrorMessageToToast("Http:doResponseQueryIndentByDesk: " + response.getException().getMessage());
+            return;
+        }
+        HttpResult<ArrayList<Indent>> result = gson.fromJson(response.get().toString(), new TypeToken<HttpResult<ArrayList<Indent>>>(){}.getType());
+        if (result.success){
+            if (result.data == null || result.data.isEmpty()){
+                mainActivity.setChoosedFoodList(new ArrayList<ChoosedFood>());
+            } else if (result.data.size() > 1){
+                CommonTool.popupWarnDialog(mainActivity, R.drawable.error, "WRONG",
+                        "Find more indents on this desk. There should have dirty data. Please report to manager!");
+            } else {
+                ArrayList<ChoosedFood> list = new ArrayList<>();
+                Indent indent = result.data.get(0);
+                ArrayList<IndentDetail> details = indent.items;
+                for (int i = 0; i < details.size(); i++) {
+                    IndentDetail detail = details.get(i);
+                    if (detail.dishId == mainActivity.getDish().getId()){
+                        ChoosedFood cf = new ChoosedFood("", 0, 0, detail.additionalRequirements, false);
+                        list.add(cf);
+                    }
+                }
+                mainActivity.setChoosedFoodList(list);
+            }
+        } else {
+            CommonTool.popupWarnDialog(mainActivity, R.drawable.error, "WRONG", "Failed to load indent by this desk. Please restart app!");
+        }
+    }
 
     //load desk
     public void loadDeskData(){
@@ -261,5 +292,12 @@ public class HttpOperator {
     public void queryConfirmCode(){
         Request<JSONObject> request = NoHttp.createJsonObjectRequest(InstantValue.URL_TOMCAT + "/common/queryconfigmap", RequestMethod.GET);
         requestQueue.add(WHAT_VALUE_QUERYCONFIRMCODE, request, responseListener);
+    }
+
+    public void queryIndentForDesk(String deskName){
+        Request<JSONObject> request = NoHttp.createJsonObjectRequest(InstantValue.URL_TOMCAT + "/indent/queryindent", RequestMethod.POST);
+        request.add("deskname", deskName);
+        request.add("status", "Unpaid");
+        requestQueue.add(WHAT_VALUE_QUERYINDENTBYDESK, request, responseListener);
     }
 }

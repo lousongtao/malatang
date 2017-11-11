@@ -38,10 +38,16 @@ public class ChoosedFoodAdapter extends ArrayAdapter<ChoosedFood> {
         TextView tvHeader = (TextView)view.findViewById(R.id.tvChoosedFoodHeader);
         TextView tvReq = (TextView)view.findViewById(R.id.tvChoosedFoodReqs);
         ImageButton imgDelete = (ImageButton)view.findViewById(R.id.imgDelete);
-        tvHeader.setText("编号 " + cf.getNo() + ", 重量 " + cf.getWeight() + ", 价格 $"+ String.format(InstantValue.FORMAT_DOUBLE_2DECIMAL, cf.getPrice()));
-        tvReq.setText(cf.getRequirement());
-        imgDelete.setOnClickListener(DeleteChoosedFoodListener.getInstance(mainActivity));
-        imgDelete.setTag(cf);
+        if (cf.isNew()) {
+            tvHeader.setText("编号 " + cf.getNo() + ", 重量 " + cf.getWeight() + ", 价格 $" + String.format(InstantValue.FORMAT_DOUBLE_2DECIMAL, cf.getPrice()));
+            tvReq.setText(cf.getRequirement());
+            imgDelete.setOnClickListener(DeleteChoosedFoodListener.getInstance(mainActivity));
+            imgDelete.setTag(cf);
+        } else {
+            tvHeader.setText("旧单");
+            tvReq.setText(cf.getRequirement());
+            imgDelete.setVisibility(View.INVISIBLE);
+        }
         return view;
     }
 }

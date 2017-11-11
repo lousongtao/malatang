@@ -9,12 +9,21 @@ public class ChoosedFood {
     private double price;
     private double weight;
     private String requirement;
+    private boolean isNew = false;
 
-    public ChoosedFood(String no, double price, double weight, String requirement){
+//    public ChoosedFood(String no, double price, double weight, String requirement){
+//        this.no = no;
+//        this.price = price;
+//        this.weight = weight;
+//        this.requirement = requirement;
+//    }
+
+    public ChoosedFood(String no, double price, double weight, String requirement, boolean isNew){
         this.no = no;
         this.price = price;
         this.weight = weight;
         this.requirement = requirement;
+        this.isNew = isNew;
     }
 
     public String getNo() {
@@ -47,5 +56,13 @@ public class ChoosedFood {
 
     public void setRequirement(String requirement) {
         this.requirement = requirement;
+    }
+
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void setNew(boolean aNew) {
+        isNew = aNew;
     }
 }
