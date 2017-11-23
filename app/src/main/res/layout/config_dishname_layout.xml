@@ -7,7 +7,7 @@
         android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="菜名(英文名) : "
+        android:text="菜名(第一语言) : "
         android:textSize="18sp" />
 
     <EditText

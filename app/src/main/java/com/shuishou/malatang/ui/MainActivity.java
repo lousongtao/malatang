@@ -326,6 +326,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "当前列表为空!", Toast.LENGTH_SHORT).show();
             return;
         }
+        boolean hasNew = false;
+        for(ChoosedFood cf : choosedFoodList){
+            if (cf.isNew()){
+                hasNew = true;
+                break;
+            }
+        }
+        if (!hasNew){
+            Toast.makeText(this, "没有新单, 下单动作取消!", Toast.LENGTH_SHORT).show();
+            return;
+        }
         DeskCell choosedDeskIcon = null;
         for (DeskCell di: deskCellList) {
             if (di.isChoosed()){
@@ -511,7 +522,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void setDish(Dish dish){
         this.dish = dish;
-        IOOperator.saveDishName(InstantValue.FILE_DISHNAME, dish.getEnglishName());
+        IOOperator.saveDishName(InstantValue.FILE_DISHNAME, dish.getFirstLanguageName());
     }
 
     public Dish getDish() {

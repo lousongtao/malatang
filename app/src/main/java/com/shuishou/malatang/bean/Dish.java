@@ -9,9 +9,9 @@ import java.io.Serializable;
 public class Dish implements Serializable{
     private int id;
 
-    private String chineseName;
+    private String firstLanguageName;
 
-    private String englishName;
+    private String secondLanguageName;
 
     private int sequence;
 
@@ -103,21 +103,6 @@ public class Dish implements Serializable{
         this.id = id;
     }
 
-    public String getChineseName() {
-        return chineseName;
-    }
-
-    public void setChineseName(String chineseName) {
-        this.chineseName = chineseName;
-    }
-
-    public String getEnglishName() {
-        return englishName;
-    }
-
-    public void setEnglishName(String englishName) {
-        this.englishName = englishName;
-    }
 
     public int getSequence() {
         return sequence;
@@ -145,11 +130,36 @@ public class Dish implements Serializable{
         this.autoMergeWhileChoose = autoMergeWhileChoose;
     }
 
-    @Override
-    public String toString() {
-        return "Dish [chineseName=" + chineseName + ", englishName=" + englishName + "]";
+    public String getFirstLanguageName() {
+        return firstLanguageName;
     }
 
+    public void setFirstLanguageName(String firstLanguageName) {
+        this.firstLanguageName = firstLanguageName;
+    }
+
+    public String getSecondLanguageName() {
+        return secondLanguageName;
+    }
+
+    public void setSecondLanguageName(String secondLanguageName) {
+        this.secondLanguageName = secondLanguageName;
+    }
+
+    public int getPurchaseType() {
+        return purchaseType;
+    }
+
+    public void setPurchaseType(int purchaseType) {
+        this.purchaseType = purchaseType;
+    }
+
+    @Override
+    public String toString() {
+        return "Dish{" +
+                "firstLanguageName='" + firstLanguageName + '\'' +
+                '}';
+    }
 
     @Override
     public int hashCode() {
