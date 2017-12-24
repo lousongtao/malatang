@@ -90,6 +90,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SwitchCompat btnMorechilli;
     private SwitchCompat btnAddPeanut;
     private SwitchCompat btnAddOnion;
+    private SwitchCompat btnAddSesame;
+    private SwitchCompat btnAddCaraway;
     private RadioButton rbNo1;
     private RadioButton rbNo2;
     private RadioButton rbNo3;
@@ -124,6 +126,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMorechilli = (SwitchCompat)findViewById(R.id.btnMorechilli);
         btnAddPeanut = (SwitchCompat)findViewById(R.id.btnAddPeanut);
         btnAddOnion = (SwitchCompat)findViewById(R.id.btnAddOnion);
+        btnAddSesame = (SwitchCompat) findViewById(R.id.btnAddSesame);
+        btnAddCaraway = (SwitchCompat) findViewById(R.id.btnAddCaraway);
         rbNo1 = (RadioButton)findViewById(R.id.rb1);
         rbNo2 = (RadioButton)findViewById(R.id.rb2);
         rbNo3 = (RadioButton)findViewById(R.id.rb3);
@@ -309,16 +313,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             sb.append("中辣 ");
         if (btnMorechilli.isChecked())
             sb.append("重辣 ");
-        if (btnAddPeanut.isChecked())
-            sb.append("加花生 ");
-        if (btnAddOnion.isChecked())
-            sb.append("加葱花 ");
-        ChoosedFood cf = new ChoosedFood(no, dish.getPrice() * Double.parseDouble(txtWeight.getText().toString()),
-                Double.parseDouble(txtWeight.getText().toString()), sb.toString(), true);
+        if (!btnAddPeanut.isChecked())
+            sb.append("不加花生 ");
+        if (!btnAddOnion.isChecked())
+            sb.append("不加葱花 ");
+        if (!btnAddSesame.isChecked())
+            sb.append("不加芝麻 ");
+        if (!btnAddCaraway.isChecked())
+            sb.append("不加香菜 ");
+        double price = dish.getPrice() * Double.parseDouble(txtWeight.getText().toString());
+        sb.append(InstantValue.DOLLARSPACE + price);
+        ChoosedFood cf = new ChoosedFood(no, price, Double.parseDouble(txtWeight.getText().toString()), sb.toString(), true);
         choosedFoodList.add(cf);
         choosedFoodAdapter.notifyDataSetChanged();
         txtWeight.setText(InstantValue.NULLSTRING);
         txNoManual.setText(InstantValue.NULLSTRING);
+        btnLittlechilli.setChecked(true);
+        btnAddCaraway.setChecked(true);
+        btnAddOnion.setChecked(true);
+        btnAddSesame.setChecked(true);
+        btnAddPeanut.setChecked(true);
     }
 
     private void doMakeOrder(){
