@@ -205,21 +205,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         deskAreaLayout.removeAllViews();
         if (desks == null || desks.isEmpty())
             return;
+        int listWidth = 400;
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int screenWidth = displayMetrics.widthPixels;
-
+        int screenWidth = (int)(displayMetrics.widthPixels / displayMetrics.density);
+        int deskcellWidth = (int)((displayMetrics.widthPixels - listWidth * displayMetrics.density - (InstantValue.DESKCELL_AMOUNTPERROW + 1) *  InstantValue.DESKCELLA_MARGIN)/ InstantValue.DESKCELL_AMOUNTPERROW);
+        int deskcellHeight = deskcellWidth;
         TableRow.LayoutParams trlp = new TableRow.LayoutParams();
-        trlp.topMargin = 5;
-        trlp.leftMargin = 5;
+        trlp.topMargin = InstantValue.DESKCELLA_MARGIN;
+        trlp.leftMargin = InstantValue.DESKCELLA_MARGIN;
 //        int width = (screenWidth - InstantValue.DESKCELLAMOUNTPERROW * trlp.leftMargin)/InstantValue.DESKCELLAMOUNTPERROW;
         TableRow tr = null;
         for (int i = 0; i < desks.size(); i++) {
-            if (i % InstantValue.DESKCELLAMOUNTPERROW == 0){
+            if (i % InstantValue.DESKCELL_AMOUNTPERROW == 0){
                 tr = new TableRow(this);
                 deskAreaLayout.addView(tr);
             }
-            DeskCell di = new DeskCell(this, desks.get(i), InstantValue.DESKCELLWIDTH, InstantValue.DESKCELLHEIGHT);
+            DeskCell di = new DeskCell(this, desks.get(i), deskcellWidth, deskcellHeight);
             deskCellList.add(di);
             tr.addView(di, trlp);
         }
@@ -322,13 +324,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!btnAddCaraway.isChecked())
             sb.append("不加香菜 ");
         double price = dish.getPrice() * Double.parseDouble(txtWeight.getText().toString());
-        sb.append(InstantValue.DOLLARSPACE + price);
+        sb.append(InstantValue.DOLLAR + String.format(InstantValue.FORMAT_DOUBLE_2DECIMAL, price));
         ChoosedFood cf = new ChoosedFood(no, price, Double.parseDouble(txtWeight.getText().toString()), sb.toString(), true);
         choosedFoodList.add(cf);
         choosedFoodAdapter.notifyDataSetChanged();
         txtWeight.setText(InstantValue.NULLSTRING);
         txNoManual.setText(InstantValue.NULLSTRING);
-        btnLittlechilli.setChecked(true);
+        btnLittlechilli.setChecked(true);//return to little spicy
+        btnNochilli.setChecked(false);
+        btnMiddlechilli.setChecked(false);
+        btnMorechilli.setChecked(false);
+        //reset on for all additional flavor
         btnAddCaraway.setChecked(true);
         btnAddOnion.setChecked(true);
         btnAddSesame.setChecked(true);
@@ -463,7 +469,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title);
         builder.setMessage(message);
-        builder.setIcon(R.drawable.info);
+        builder.setIcon(R.drawable.success);
         builder.setNegativeButton("OK", null);
         builder.create().show();
     }
@@ -471,7 +477,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void onRefreshData(){
         dbOperator.deleteAllData(Desk.class);
         httpOperator.loadDeskData();
-        CommonTool.popupWarnDialog(this, R.drawable.info, "成功", "数据同步成功.");
+        CommonTool.popupWarnDialog(this, R.drawable.success, "成功", "数据同步成功.");
     }
 
     public void removeChoosedFoodFromList(ChoosedFood cf){

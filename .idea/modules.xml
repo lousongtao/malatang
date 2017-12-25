@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Malatang.iml" filepath="$PROJECT_DIR$/Malatang.iml" />
+      <module fileurl="file://D:\workspace-digitalmenu\android-malatang\Malatang.iml" filepath="D:\workspace-digitalmenu\android-malatang\Malatang.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android-malatang.iml" filepath="$PROJECT_DIR$/android-malatang.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

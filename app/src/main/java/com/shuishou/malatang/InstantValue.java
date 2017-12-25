@@ -16,7 +16,8 @@ public final class InstantValue {
 
     public static final int DESKCELLWIDTH = 80;
     public static final int DESKCELLHEIGHT = 80;
-    public static final int DESKCELLAMOUNTPERROW = 13;
+    public static final int DESKCELL_AMOUNTPERROW = 13;
+    public static final int DESKCELLA_MARGIN = 5;
 
     public static final String FORMAT_DOUBLE_2DECIMAL = "%.2f";
 
