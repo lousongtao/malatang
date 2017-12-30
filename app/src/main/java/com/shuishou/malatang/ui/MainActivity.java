@@ -55,6 +55,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import pl.brightinventions.slf4android.LoggerConfiguration;
 
@@ -205,6 +207,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         deskAreaLayout.removeAllViews();
         if (desks == null || desks.isEmpty())
             return;
+        Collections.sort(desks, new Comparator<Desk>() {
+            @Override
+            public int compare(Desk o1, Desk o2) {
+                return o1.getSequence() - o2.getSequence();
+            }
+        });
         int listWidth = 400;
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -551,6 +559,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void setConfirmCode(String confirmCode) {
         this.confirmCode = confirmCode;
+    }
+
+    public void popRestartDialog(String msg){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(msg)
+                .setIcon(R.drawable.info)
+                .setPositiveButton("Restart", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                        System.exit(1);
+                    }
+                });
+        AlertDialog dlg = builder.create();
+        dlg.setCancelable(false);
+        dlg.setCanceledOnTouchOutside(false);
+        dlg.show();
     }
 
     //屏蔽实体按键BACK

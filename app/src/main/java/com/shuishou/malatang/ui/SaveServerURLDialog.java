@@ -74,6 +74,7 @@ class SaveServerURLDialog {
         IOOperator.saveServerURL(InstantValue.FILE_SERVERURL, url);
         InstantValue.URL_TOMCAT = url;
         dlg.dismiss();
+        mainActivity.popRestartDialog("Save server URL successfully, please restart the app.");
     }
 
     public void showDialog(){
