@@ -440,11 +440,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void addDishToOrder(final int deskid){
+        if (choosedFoodList == null || choosedFoodList.isEmpty()){
+            Toast.makeText(MainActivity.this, "The choosed list is empty, cannot ADD!", Toast.LENGTH_SHORT).show();
+            return;
+        }
         JSONArray os = null;
         try {
             os = generateOrderJson();
         } catch (JSONException e) {
-            Toast.makeText(MainActivity.this, "There are error to build JSON Object, please !", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "There are error to build JSON Object!", Toast.LENGTH_SHORT).show();
             return;
         }
 
