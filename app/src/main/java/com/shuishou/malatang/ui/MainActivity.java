@@ -2,6 +2,9 @@ package com.shuishou.malatang.ui;
 
 import android.app.ActivityManager;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,6 +18,7 @@ import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +36,7 @@ import com.shuishou.malatang.bean.ChoosedFood;
 import com.shuishou.malatang.bean.Desk;
 import com.shuishou.malatang.bean.Dish;
 import com.shuishou.malatang.bean.HttpResult;
+import com.shuishou.malatang.bean.Indent;
 import com.shuishou.malatang.db.DBOperator;
 import com.shuishou.malatang.http.HttpOperator;
 import com.shuishou.malatang.io.IOOperator;
@@ -48,10 +53,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Set;
+import java.util.UUID;
 
 import pl.brightinventions.slf4android.LoggerConfiguration;
 
@@ -98,6 +106,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RadioButton rbNo7;
     private EditText txNoManual;
 
+    private BluetoothAdapter bluetoothAdapter;
+    private static final int REQUEST_ENABLE_BT = 1;
+    private InputStream bluetoothInputStream;
+    private BluetoothSocket socket;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         choosedFoodAdapter = new ChoosedFoodAdapter(this, R.layout.choosedfood_layout, choosedFoodList);
         lvChoosedFood.setAdapter(choosedFoodAdapter);
         tvRefreshData = (TextView)findViewById(R.id.drawermenu_refreshdata);
-        tvServerURL = (TextView)findViewById(R.id.drawermenu_serverurl);
+        tvServerURL = (TextView)findViewById(R.id.drawermenu_connection);
         tvUploadErrorLog = (TextView)findViewById(R.id.drawermenu_uploaderrorlog);
         tvExit = (TextView)findViewById(R.id.drawermenu_exit);
         tvDishName = (TextView)findViewById(R.id.drawmenu_dishname);
@@ -168,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Logger.setDebug(true);
         Logger.setTag("malatang:nohttp");
 
-        InstantValue.URL_TOMCAT = IOOperator.loadServerURL(InstantValue.FILE_SERVERURL);
+        IOOperator.loadConnection(InstantValue.FILE_CONNECTION);
         httpOperator = new HttpOperator(this);
         dbOperator = new DBOperator(this);
 
@@ -178,6 +191,79 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         loadDish();
         buildDesks();
+
+    }
+
+    private void buildBluetoothSocket(){
+        if (InstantValue.BLUETOOTHUUID != null && InstantValue.BLUETOOTHUUID.length() > 0
+            && InstantValue.BLUETOOTHDEVICE != null && InstantValue.BLUETOOTHDEVICE.length() > 0){
+            long l1 = System.currentTimeMillis();
+            //create socket to bluetooth equipment
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null){
+                Toast.makeText(this, "Cannot find bluetooth module!", Toast.LENGTH_LONG).show();
+                return;
+            }
+            long l2 = System.currentTimeMillis();
+            Log.d("lousongtao", "step1 : " + (l2 - l1));
+            //open bluetooth module if it is closed
+            if (!bluetoothAdapter.isEnabled()){
+                Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+            }
+
+            Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+            if (pairedDevices == null || pairedDevices.size() == 0 ){
+                Toast.makeText(this, "Unbind any bluetooth device!", Toast.LENGTH_LONG).show();
+                return;
+            }
+            BluetoothDevice device = null;
+            for (BluetoothDevice d : pairedDevices){
+                if (InstantValue.BLUETOOTHDEVICE.equals(d.getName())){
+                    device = d;
+                    break;
+                }
+            }
+            long l3 = System.currentTimeMillis();
+            Log.d("lousongtao", "step2 : " + (l3 - l2));
+            if (device == null){
+                Toast.makeText(this, "Cannot find the bonded bluetooth device " + InstantValue.BLUETOOTHDEVICE, Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (socket == null || !socket.isConnected()){
+                try{
+                    UUID uuid = UUID.fromString(InstantValue.BLUETOOTHUUID);
+                    socket = device.createRfcommSocketToServiceRecord(uuid);
+                } catch (Exception e){
+                    Toast.makeText(this, "Failed to build connection with bluetooth equipment!", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                long l4 = System.currentTimeMillis();
+                Log.d("lousongtao", "step3 : " + (l4 - l3));
+                bluetoothAdapter.cancelDiscovery();//在connect之前必须调用一下.
+                try{
+                    socket.connect();
+                } catch (IOException e){
+                    Log.d("lousongtao", e.getMessage());
+                    try{
+                        socket.close();
+                    } catch (IOException ex){}
+
+                    Toast.makeText(this, "Failed to do socket connect!", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                long l5 = System.currentTimeMillis();
+                Log.d("lousongtao", "step4 : " + (l5 - l4));
+                try {
+                    bluetoothInputStream = socket.getInputStream();
+                } catch (IOException e){
+                    Log.d("lousongtao", e.getMessage());
+                }
+                long l6 = System.currentTimeMillis();
+                Log.d("lousongtao", "step5 : " + (l6 - l5));
+            }
+
+        }
     }
 
     private double calculatePrice(double weight){
@@ -250,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (v == tvRefreshData){
             onRefreshData();
         } else if (v == tvServerURL){
-            SaveServerURLDialog dlg = new SaveServerURLDialog(MainActivity.this);
+            SaveConnectionDialog dlg = new SaveConnectionDialog(MainActivity.this);
             dlg.showDialog();
         } else if (v == tvExit){
 
@@ -266,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .setNegativeButton("No", null);
             builder.create().show();
         } else if (v == btnGetWeight){
-
+            readBluetoothSocketData();
         } else if (v == btnAddToList){
             doAddToList();
         } else if (v == btnMakeOrder){
@@ -295,6 +381,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             btnMiddlechilli.setChecked(false);
             btnMorechilli.setChecked(true);
         }
+    }
+
+    /**
+     * 经过测试, 不管这个buffer设置多大, 一次都不能全部读取, 感觉上设备上会有缓存.
+     * 所以这里要连续不断的读inputstream到buffer里, 直到读出的数据小于某个范围(该范围针对不同的电子秤, 不同的发射数据速度, 会有不同),
+     * 即先把前面缓存的数据读完清理掉, 然后再读取发送过来的数据
+     * 针对不同的电子秤, 可能需要不同的数据解析方式
+     */
+    private void readBluetoothSocketData(){
+        if (bluetoothInputStream != null){
+            int aSmalllLength = 100;
+            boolean loopflag = true;
+
+            try{
+                while(loopflag) {
+                    byte[] buffer = new byte[2048];
+                    int bytes = bluetoothInputStream.read(buffer);
+
+                    Log.d("lousongtao", "read length = " + bytes);
+                    if (bytes < aSmalllLength) {
+                        loopflag = false;
+                        String result = new String(buffer);
+                        Log.d("lousongtao", "buffer = " + result);
+                        String[] resultList = result.split("\n");
+                        String dstr = resultList[0].replaceAll(" ", "");
+                        if (dstr.length() > 0) {//测试中发现经常获得空字符串
+                            Double d = Double.parseDouble(dstr);
+                            txtWeight.setText(String.format("%.2f", d));
+                        }
+                    }
+                }
+            } catch (IOException e){
+                Toast.makeText(this, "Failed to read data from bluetooth socket inputstream!", Toast.LENGTH_LONG).show();
+                return;
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (socket == null || !socket.isConnected())
+            buildBluetoothSocket();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try{
+            if (socket != null)
+                socket.close();
+        } catch (IOException ex){}
     }
 
     private void doAddToList(){

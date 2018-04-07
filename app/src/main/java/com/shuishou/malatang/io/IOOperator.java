@@ -31,12 +31,15 @@ import java.util.zip.ZipOutputStream;
  */
 
 public class IOOperator {
-
-    public static void saveServerURL(String fileName, String url){
+    private static final String URL = "url=";
+    private static final String BLUETOOTHUUID = "BluetoothUUID=";
+    private static final String BLUETOOTHDEVICE = "BluetoothDevice=";
+    private static final String SEPERATE = ";";
+    public static void saveConnection(String fileName, String url, String bluetoothDevice, String bluetoothUUID){
         FileWriter writer = null;
         try {
             writer = new FileWriter(fileName);
-            writer.write(url);
+            writer.write(URL + url + SEPERATE + BLUETOOTHUUID + bluetoothUUID + SEPERATE + BLUETOOTHDEVICE + bluetoothDevice);
             writer.close();
         } catch (IOException e) {
             Log.e("IOException", "error to save ServerURL +\n"+e.getStackTrace());
@@ -66,14 +69,23 @@ public class IOOperator {
         }
     }
 
-    public static String loadServerURL(String fileName){
+    public static String loadConnection(String fileName){
         File file = new File(fileName);
         if (!file.exists())
             return "";
         BufferedReader in = null;
         try {
             in = new BufferedReader(new FileReader(file));
-            return in.readLine();
+            String str = in.readLine();
+            String[] ps = str.split(SEPERATE);
+            for (String s : ps) {
+                if (s.indexOf(URL) == 0)
+                    InstantValue.URL_TOMCAT = s.replace(URL, "");//remove the identification flay
+                else if (s.indexOf(BLUETOOTHUUID) == 0)
+                    InstantValue.BLUETOOTHUUID = s.replace(BLUETOOTHUUID, "");
+                else if (s.indexOf(BLUETOOTHDEVICE) == 0)
+                    InstantValue.BLUETOOTHDEVICE = s.replace(BLUETOOTHDEVICE, "");
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

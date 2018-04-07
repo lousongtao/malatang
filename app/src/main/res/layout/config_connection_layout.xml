@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Server URL : "
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/txtServerURL"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Please firstly pair this pad/phone and the bluetooth equipment before save the configuration!"
+        android:textSize="18sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Bluetooth Device : "
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/txtBluetoothDevice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Bluetooth UUID : "
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/txtBluetoothUUID"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="00001101-0000-1000-8000-00805F9B34FB" />
+    </LinearLayout>
+
+
+
+</LinearLayout>

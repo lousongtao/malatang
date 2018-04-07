@@ -17,24 +17,27 @@ import com.shuishou.malatang.io.IOOperator;
  * Created by Administrator on 2017/7/21.
  */
 
-class SaveServerURLDialog {
+class SaveConnectionDialog {
 
     private EditText txtServerURL;
+    private EditText txtBluetoothUUID;
+    private EditText txtBluetoothDevice;
     private MainActivity mainActivity;
 
     private AlertDialog dlg;
 
-    public SaveServerURLDialog(@NonNull MainActivity mainActivity) {
+    public SaveConnectionDialog(@NonNull MainActivity mainActivity) {
         this.mainActivity = mainActivity;
         initUI();
     }
 
     private void initUI(){
-        View view = LayoutInflater.from(mainActivity).inflate(R.layout.config_serverurl_layout, null);
+        View view = LayoutInflater.from(mainActivity).inflate(R.layout.config_connection_layout, null);
 
         txtServerURL = (EditText) view.findViewById(R.id.txtServerURL);
-
-        loadServerURL();
+        txtBluetoothUUID = (EditText) view.findViewById(R.id.txtBluetoothUUID);
+        txtBluetoothDevice = (EditText) view.findViewById(R.id.txtBluetoothDevice);
+        loadConnection();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
         builder.setTitle("Configure Server URL")
@@ -59,19 +62,25 @@ class SaveServerURLDialog {
         dlg.setCanceledOnTouchOutside(false);
     }
 
-    private void loadServerURL(){
-        String url = IOOperator.loadServerURL(InstantValue.FILE_SERVERURL);
-        if (url != null)
-            txtServerURL.setText(url);
+    private void loadConnection(){
+        if (InstantValue.URL_TOMCAT != null)
+            txtServerURL.setText(InstantValue.URL_TOMCAT);
+        if (InstantValue.BLUETOOTHUUID != null && InstantValue.BLUETOOTHUUID.length() > 0)
+            txtBluetoothUUID.setText(InstantValue.BLUETOOTHUUID);
+        if (InstantValue.BLUETOOTHDEVICE != null)
+            txtBluetoothDevice.setText(InstantValue.BLUETOOTHDEVICE);
     }
 
     private void doSaveURL(){
         final String url = txtServerURL.getText().toString();
+        final String bluetoothUUID = txtBluetoothUUID.getText().toString();
+        final String bluetoothDevice = txtBluetoothDevice.getText().toString();
         if (url == null || url.length() == 0){
             Toast.makeText(mainActivity, "Please input server URL.", Toast.LENGTH_LONG).show();
             return;
         }
-        IOOperator.saveServerURL(InstantValue.FILE_SERVERURL, url);
+
+        IOOperator.saveConnection(InstantValue.FILE_CONNECTION, url, bluetoothDevice, bluetoothUUID);
         InstantValue.URL_TOMCAT = url;
         dlg.dismiss();
         mainActivity.popRestartDialog("Save server URL successfully, please restart the app.");

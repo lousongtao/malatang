@@ -284,11 +284,11 @@
         android:layout_gravity="start">
 
         <TextView
-            android:id="@+id/drawermenu_serverurl"
+            android:id="@+id/drawermenu_connection"
             android:layout_width="match_parent"
             android:layout_height="80dp"
             android:layout_marginTop="20dp"
-            android:text="配置服务器地址"
+            android:text="配置"
             android:textSize="30sp" />
 
         <TextView
