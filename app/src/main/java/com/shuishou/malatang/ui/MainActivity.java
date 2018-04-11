@@ -168,7 +168,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (s == null || s.length() == 0){
                     tvPrice.setText(InstantValue.NULLSTRING);
                 } else if (dish != null) {
-                    tvPrice.setText(InstantValue.PRICE + String.format(InstantValue.FORMAT_DOUBLE_2DECIMAL, calculatePrice(Double.parseDouble(s.toString()))));
+                    try{
+                        tvPrice.setText(InstantValue.PRICE + String.format(InstantValue.FORMAT_DOUBLE_2DECIMAL, calculatePrice(Double.parseDouble(s.toString()))));
+                    } catch (Exception e){}
+
                 }
             }
         });
@@ -423,63 +426,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         }
-//        if (bluetoothInputStream != null){
-//            int aSmalllLength = 100;
-//            boolean loopflag = true;
-//            try{
-//                if (bluetoothInputStream.available() == 0){//由于BluetoothSocket没有isClosed方法, 不清楚这样是不是能判断出socket的close状态
-//                    buildBluetoothSocket();
-//                }
-//                while(loopflag) {
-//                    byte[] buffer = new byte[2048];
-//                    int bytes = bluetoothInputStream.read(buffer);
-//
-//                    Log.d("lousongtao", "read length = " + bytes);
-//                    if (bytes < aSmalllLength) {
-//                        loopflag = false;
-//                        String result = new String(buffer);
-//                        Log.d("lousongtao", "buffer = " + result);
-//                        String[] resultList = result.split("\n");
-//                        String dstr = resultList[0].replaceAll(" ", "");
-//                        try{
-//                            Double d = Double.parseDouble(dstr);
-//                            txtWeight.setText(String.format("%.2f", d));
-//                        } catch (Exception e){
-//                            loopflag = true;//测试中发现经常获得空字符串dstr为"", 而且用dstr.length()>0判断不出来, 只能在异常的时候重新循环
-//                        }
-//                    }
-//                }
-//            } catch (IOException e){
-//                e.printStackTrace();
-////                Toast.makeText(this, "Failed to read data from bluetooth socket inputstream!", Toast.LENGTH_LONG).show();
-//                return;
-//            }
-//        }
     }
 
     public void startProgressDialog(String title, String message){
         progressDlg = ProgressDialog.show(this, title, message);
-        //启动progress dialog后, 同时启动一个线程来关闭该process dialog, 以防系统未正常结束, 导致此progress dialog长时间卡主. 设定时间为5秒(超过bluetoothsocket的连接时间)
-//        Runnable r = new Runnable() {
-//            @Override
-//            public void run() {
-//                if (progressDlg != null)
-//                    progressDlg.dismiss();
-//            }
-//        };
-//        Handler progressDlgCanceller = new Handler();
-//        progressDlgCanceller.postDelayed(r, 5000);
     }
-
-    /**
-     * 如果socket未连接, 创建socket;
-     */
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-////        buildBluetoothSocket();
-//    }
-
 
     @Override
     protected void onDestroy() {
