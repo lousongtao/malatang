@@ -49,19 +49,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.UUID;
-
-import pl.brightinventions.slf4android.LoggerConfiguration;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     public static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MainActivity.class.getSimpleName());
@@ -110,6 +104,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_ENABLE_BT = 1;
     private InputStream bluetoothInputStream;
     private BluetoothSocket socket;
+
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -194,73 +190,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    private BluetoothDevice getBluetoothDevice(){
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!bluetoothAdapter.isEnabled()){
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+        }
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        if (pairedDevices == null || pairedDevices.size() == 0 ){
+            Toast.makeText(this, "Unbind any bluetooth device!", Toast.LENGTH_LONG).show();
+            return null;
+        }
+        for (BluetoothDevice d : pairedDevices){
+            if (InstantValue.BLUETOOTHDEVICE.equals(d.getName())){
+                return d;
+            }
+        }
+        return null;
+    }
     private void buildBluetoothSocket(){
         if (InstantValue.BLUETOOTHUUID != null && InstantValue.BLUETOOTHUUID.length() > 0
             && InstantValue.BLUETOOTHDEVICE != null && InstantValue.BLUETOOTHDEVICE.length() > 0){
-            long l1 = System.currentTimeMillis();
-            //create socket to bluetooth equipment
-            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            if (bluetoothAdapter == null){
-                Toast.makeText(this, "Cannot find bluetooth module!", Toast.LENGTH_LONG).show();
-                return;
-            }
-            long l2 = System.currentTimeMillis();
-            Log.d("lousongtao", "step1 : " + (l2 - l1));
-            //open bluetooth module if it is closed
-            if (!bluetoothAdapter.isEnabled()){
-                Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-            }
-
-            Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-            if (pairedDevices == null || pairedDevices.size() == 0 ){
-                Toast.makeText(this, "Unbind any bluetooth device!", Toast.LENGTH_LONG).show();
-                return;
-            }
-            BluetoothDevice device = null;
-            for (BluetoothDevice d : pairedDevices){
-                if (InstantValue.BLUETOOTHDEVICE.equals(d.getName())){
-                    device = d;
-                    break;
-                }
-            }
-            long l3 = System.currentTimeMillis();
-            Log.d("lousongtao", "step2 : " + (l3 - l2));
-            if (device == null){
-                Toast.makeText(this, "Cannot find the bonded bluetooth device " + InstantValue.BLUETOOTHDEVICE, Toast.LENGTH_LONG).show();
-                return;
-            }
-            if (socket == null || !socket.isConnected()){
-                try{
-                    UUID uuid = UUID.fromString(InstantValue.BLUETOOTHUUID);
-                    socket = device.createRfcommSocketToServiceRecord(uuid);
-                } catch (Exception e){
-                    Toast.makeText(this, "Failed to build connection with bluetooth equipment!", Toast.LENGTH_LONG).show();
+            try{
+                if (bluetoothInputStream != null && bluetoothInputStream.available() > 0)//此时socket还未断开, 不需要重连
+                    return;
+                BluetoothDevice device = getBluetoothDevice();
+                if (device == null){
+                    Toast.makeText(this, "Cannot find the bonded bluetooth device " + InstantValue.BLUETOOTHDEVICE, Toast.LENGTH_LONG).show();
                     return;
                 }
-                long l4 = System.currentTimeMillis();
-                Log.d("lousongtao", "step3 : " + (l4 - l3));
-                bluetoothAdapter.cancelDiscovery();//在connect之前必须调用一下.
-                try{
-                    socket.connect();
-                } catch (IOException e){
-                    Log.d("lousongtao", e.getMessage());
-                    try{
+
+                if (socket != null){
+                    try {
                         socket.close();
-                    } catch (IOException ex){}
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                UUID uuid = UUID.fromString(InstantValue.BLUETOOTHUUID);
+                socket = device.createRfcommSocketToServiceRecord(uuid);
+                bluetoothAdapter.cancelDiscovery();//在connect之前必须调用一下.
+                long l1 = System.currentTimeMillis();
+                handler.sendMessage(CommonTool.buildMessage(PROGRESSDLGHANDLER_MSGWHAT_SHOWPROGRESS, "building bluetooth socket"));//耗时操作, 弹出等待框
+                socket.connect();
+                bluetoothInputStream = socket.getInputStream();
+                long l2 = System.currentTimeMillis();
+                Log.d("lousongtao", "buildBluetoothSocket: use time " + (l2 - l1));
+            } catch (IOException e) {
+                Log.d("lousongtao", e.getMessage());
 
-                    Toast.makeText(this, "Failed to do socket connect!", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                long l5 = System.currentTimeMillis();
-                Log.d("lousongtao", "step4 : " + (l5 - l4));
                 try {
-                    bluetoothInputStream = socket.getInputStream();
-                } catch (IOException e){
-                    Log.d("lousongtao", e.getMessage());
+                    socket.close();
+                } catch (IOException ex) {
                 }
-                long l6 = System.currentTimeMillis();
-                Log.d("lousongtao", "step5 : " + (l6 - l5));
+            } finally {
+                if (progressDlg != null)
+                    progressDlg.dismiss();
             }
 
         }
@@ -384,47 +369,117 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 经过测试, 不管这个buffer设置多大, 一次都不能全部读取, 感觉上设备上会有缓存.
+     * 目前使用的蓝牙电子秤, 会连续不断的发送数据.
+     * 经过测试, 不管这个buffer设置多大, 一次都不能把数据全部读取, 感觉上设备上会有缓存.
      * 所以这里要连续不断的读inputstream到buffer里, 直到读出的数据小于某个范围(该范围针对不同的电子秤, 不同的发射数据速度, 会有不同),
      * 即先把前面缓存的数据读完清理掉, 然后再读取发送过来的数据
      * 针对不同的电子秤, 可能需要不同的数据解析方式
+     * 2. 经过多次尝试, 发现BluetoothSocket无法获得连接状态, 经常在socket.connected=true时, 在inputstream.read时发生异常.
+     * 所以安全的做法是, 每次取数据时, 检测socket, 如果不通, 就创建; 再检测inputstream, 如果不能读, 就重新创建socket; 这样两次检查后如果还不行, 就提示错误, 不再读取socket
+     * 3. 测试中发现, 如果长时间未读取socket, 估计30秒左右, 再次读取时, 只能得到之前的数值, 比如"0", 而不是真正的数值. 推测这是蓝牙秤的问题. 不处理这个bug
      */
-    private void readBluetoothSocketData(){
-        if (bluetoothInputStream != null){
-            int aSmalllLength = 100;
-            boolean loopflag = true;
+    private void readBluetoothSocketData()  {
+        txtWeight.setText("");
+        if (InstantValue.BLUETOOTHUUID == null || InstantValue.BLUETOOTHUUID.length() == 0)
+            return;
+        if (InstantValue.BLUETOOTHDEVICE == null || InstantValue.BLUETOOTHDEVICE.length() == 0){
+            return;
+        }
+        if (bluetoothInputStream == null){
+            buildBluetoothSocket();
+        }
+        int readlength = 0;
+        try {
+            readlength = bluetoothInputStream.read();//读取一个字节, 判断当前的inputstream是否还可用
+        } catch (IOException ex){}
+        if (readlength == 0){
+            buildBluetoothSocket();
+        }
 
+        int aSmalllLength = 100;
+        boolean loopflag = true;//循环读取inputstream中的值
+        while(loopflag) {
+            byte[] buffer = new byte[2048];
             try{
-                while(loopflag) {
-                    byte[] buffer = new byte[2048];
-                    int bytes = bluetoothInputStream.read(buffer);
-
-                    Log.d("lousongtao", "read length = " + bytes);
-                    if (bytes < aSmalllLength) {
-                        loopflag = false;
-                        String result = new String(buffer);
-                        Log.d("lousongtao", "buffer = " + result);
-                        String[] resultList = result.split("\n");
-                        String dstr = resultList[0].replaceAll(" ", "");
-                        if (dstr.length() > 0) {//测试中发现经常获得空字符串
-                            Double d = Double.parseDouble(dstr);
-                            txtWeight.setText(String.format("%.2f", d));
-                        }
-                    }
-                }
-            } catch (IOException e){
-                Toast.makeText(this, "Failed to read data from bluetooth socket inputstream!", Toast.LENGTH_LONG).show();
+                readlength = bluetoothInputStream.read(buffer);
+            } catch (IOException ex){
+                //经过前面两次判断, 此时的socket应该已经联通, 如果这里还是有异常, 证明这次socket未创建成功, 此时直接报错, 退出该方法
+                Toast.makeText(this, "Cannot connect to bluetooth equipment!", Toast.LENGTH_LONG).show();
+                Log.d("lousongtao", "after rebuild bluetooth socket, the read of inputstream is still error.");
                 return;
             }
+            Log.d("lousongtao", "read length = " + readlength);
+            if (readlength > 0 && readlength < aSmalllLength) {
+                loopflag = false;
+                String result = new String(buffer);
+                Log.d("lousongtao", "buffer = " + result);
+                String[] resultList = result.split("\n");
+                String dstr = resultList[0].replaceAll(" ", "");
+                try{
+                    Double d = Double.parseDouble(dstr);
+                    txtWeight.setText(String.format("%.2f", d));
+                } catch (Exception e){
+                    loopflag = true;//测试中发现经常获得空字符串dstr为"", 而且用dstr.length()>0判断不出来, 只能在异常的时候重新循环
+                }
+            }
         }
+//        if (bluetoothInputStream != null){
+//            int aSmalllLength = 100;
+//            boolean loopflag = true;
+//            try{
+//                if (bluetoothInputStream.available() == 0){//由于BluetoothSocket没有isClosed方法, 不清楚这样是不是能判断出socket的close状态
+//                    buildBluetoothSocket();
+//                }
+//                while(loopflag) {
+//                    byte[] buffer = new byte[2048];
+//                    int bytes = bluetoothInputStream.read(buffer);
+//
+//                    Log.d("lousongtao", "read length = " + bytes);
+//                    if (bytes < aSmalllLength) {
+//                        loopflag = false;
+//                        String result = new String(buffer);
+//                        Log.d("lousongtao", "buffer = " + result);
+//                        String[] resultList = result.split("\n");
+//                        String dstr = resultList[0].replaceAll(" ", "");
+//                        try{
+//                            Double d = Double.parseDouble(dstr);
+//                            txtWeight.setText(String.format("%.2f", d));
+//                        } catch (Exception e){
+//                            loopflag = true;//测试中发现经常获得空字符串dstr为"", 而且用dstr.length()>0判断不出来, 只能在异常的时候重新循环
+//                        }
+//                    }
+//                }
+//            } catch (IOException e){
+//                e.printStackTrace();
+////                Toast.makeText(this, "Failed to read data from bluetooth socket inputstream!", Toast.LENGTH_LONG).show();
+//                return;
+//            }
+//        }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (socket == null || !socket.isConnected())
-            buildBluetoothSocket();
+    public void startProgressDialog(String title, String message){
+        progressDlg = ProgressDialog.show(this, title, message);
+        //启动progress dialog后, 同时启动一个线程来关闭该process dialog, 以防系统未正常结束, 导致此progress dialog长时间卡主. 设定时间为5秒(超过bluetoothsocket的连接时间)
+//        Runnable r = new Runnable() {
+//            @Override
+//            public void run() {
+//                if (progressDlg != null)
+//                    progressDlg.dismiss();
+//            }
+//        };
+//        Handler progressDlgCanceller = new Handler();
+//        progressDlgCanceller.postDelayed(r, 5000);
     }
+
+    /**
+     * 如果socket未连接, 创建socket;
+     */
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+////        buildBluetoothSocket();
+//    }
+
 
     @Override
     protected void onDestroy() {
@@ -432,6 +487,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try{
             if (socket != null)
                 socket.close();
+
         } catch (IOException ex){}
     }
 
@@ -768,10 +824,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return progressDlgHandler;
     }
 
-    public void startProgressDialog(String title, String message){
-        progressDlg = ProgressDialog.show(this, title, message);
-    }
-
     public static final int PROGRESSDLGHANDLER_MSGWHAT_DISMISSDIALOG = 0;
     public static final int PROGRESSDLGHANDLER_MSGWHAT_SHOWPROGRESS = 1;
     public static final int PROGRESSDLGHANDLER_MSGWHAT_STARTLOADDATA = 3;
@@ -790,6 +842,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (progressDlg != null){
                     progressDlg.setMessage(msg.obj != null ? msg.obj.toString() : "");
                 }
+            } else if (msg.what == PROGRESSDLGHANDLER_MSGWHAT_SHOWPROGRESS){
+                if (progressDlg == null){
+                    progressDlg = ProgressDialog.show(MainActivity.this, "", msg.obj != null ? msg.obj.toString() : InstantValue.NULLSTRING);
+                }
+                progressDlg.show();
             }
         }
     };

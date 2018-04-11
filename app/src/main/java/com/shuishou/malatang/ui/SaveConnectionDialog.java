@@ -91,7 +91,7 @@ class SaveConnectionDialog {
         IOOperator.saveConnection(InstantValue.FILE_CONNECTION, url, bluetoothDevice, bluetoothUUID);
         InstantValue.URL_TOMCAT = url;
         dlg.dismiss();
-        mainActivity.popRestartDialog("Save server URL successfully, please restart the app.");
+        mainActivity.popRestartDialog("Configuration params changed successfully, please restart the app.");
     }
 
     public void showDialog(){
