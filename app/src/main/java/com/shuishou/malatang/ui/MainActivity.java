@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SwitchCompat btnAddOnion;
     private SwitchCompat btnAddSesame;
     private SwitchCompat btnAddCaraway;
+    private SwitchCompat btnAddSauce;
     private RadioButton rbNo1;
     private RadioButton rbNo2;
     private RadioButton rbNo3;
@@ -134,6 +135,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnAddOnion = (SwitchCompat)findViewById(R.id.btnAddOnion);
         btnAddSesame = (SwitchCompat) findViewById(R.id.btnAddSesame);
         btnAddCaraway = (SwitchCompat) findViewById(R.id.btnAddCaraway);
+        btnAddSauce = (SwitchCompat) findViewById(R.id.btnAddSauce);
+
         rbNo1 = (RadioButton)findViewById(R.id.rb1);
         rbNo2 = (RadioButton)findViewById(R.id.rb2);
         rbNo3 = (RadioButton)findViewById(R.id.rb3);
@@ -471,6 +474,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             sb.append("不加芝麻 ");
         if (!btnAddCaraway.isChecked())
             sb.append("不加香菜 ");
+        if (!btnAddSauce.isChecked())
+            sb.append("不加芝麻酱");
         double price = dish.getPrice() * Double.parseDouble(txtWeight.getText().toString());
         sb.append(InstantValue.DOLLAR + String.format(InstantValue.FORMAT_DOUBLE_2DECIMAL, price));
         ChoosedFood cf = new ChoosedFood(no, price, Double.parseDouble(txtWeight.getText().toString()), sb.toString(), true);
@@ -484,6 +489,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMorechilli.setChecked(false);
         //reset on for all additional flavor
         btnAddCaraway.setChecked(true);
+        btnAddSauce.setChecked(true);
         btnAddOnion.setChecked(true);
         btnAddSesame.setChecked(true);
         btnAddPeanut.setChecked(true);
