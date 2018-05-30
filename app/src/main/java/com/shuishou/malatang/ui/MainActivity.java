@@ -474,8 +474,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             sb.append("不加芝麻 ");
         if (!btnAddCaraway.isChecked())
             sb.append("不加香菜 ");
-        if (!btnAddSauce.isChecked())
-            sb.append("不加芝麻酱");
+        if (btnAddSauce.isChecked())
+            sb.append("加芝麻酱");
         double price = dish.getPrice() * Double.parseDouble(txtWeight.getText().toString());
         sb.append(InstantValue.DOLLAR + String.format(InstantValue.FORMAT_DOUBLE_2DECIMAL, price));
         ChoosedFood cf = new ChoosedFood(no, price, Double.parseDouble(txtWeight.getText().toString()), sb.toString(), true);
@@ -489,7 +489,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMorechilli.setChecked(false);
         //reset on for all additional flavor
         btnAddCaraway.setChecked(true);
-        btnAddSauce.setChecked(true);
+        btnAddSauce.setChecked(false);
         btnAddOnion.setChecked(true);
         btnAddSesame.setChecked(true);
         btnAddPeanut.setChecked(true);

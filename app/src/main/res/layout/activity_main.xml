@@ -128,7 +128,7 @@
                         android:layout_height="80dp"
                         android:layout_marginStart="685dp"
                         android:layout_marginTop="90dp"
-                        android:checked="true"
+                        android:checked="false"
                         android:text="芝麻酱"
                         android:textSize="32sp"
                         android:theme="@style/SCBSwitch" />
