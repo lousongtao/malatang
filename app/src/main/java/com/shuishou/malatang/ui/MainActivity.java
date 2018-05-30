@@ -258,7 +258,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private double calculatePrice(double weight){
-        return dish.getPrice() * weight;
+        if (dish != null)
+            return dish.getPrice() * weight;
+        else return 0;
     }
 
     private void loadConfirmCode(){
@@ -433,8 +435,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void startProgressDialog(String title, String message){
         progressDlg = ProgressDialog.show(this, title, message);
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                if (progressDlg != null)
+                    progressDlg.dismiss();
+                }
+        };
+        Handler progressDlgCanceller = new Handler();
+        progressDlgCanceller.postDelayed(r, 15000);
     }
 
+    public void stopProgressDialog(){
+        progressDlgHandler.sendMessage(CommonTool.buildMessage(PROGRESSDLGHANDLER_MSGWHAT_DISMISSDIALOG));
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -448,6 +462,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void doAddToList(){
         if (txtWeight.getText() == null || txtWeight.getText().length() == 0){
             Toast.makeText(this, "请输入重量!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (dish == null){
+            Toast.makeText(this, "No dish data, please restart app!", Toast.LENGTH_SHORT).show();
             return;
         }
         String no = getNo();
@@ -498,6 +516,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void doMakeOrder(){
         if (choosedFoodList.isEmpty()){
             Toast.makeText(this, "当前列表为空!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (dish == null){
+            Toast.makeText(this, "No dish data, please restart app!", Toast.LENGTH_SHORT).show();
             return;
         }
         boolean hasNew = false;
