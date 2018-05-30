@@ -1,0 +1,2 @@
+20180530
+	1. add waiting dialog while changing desk

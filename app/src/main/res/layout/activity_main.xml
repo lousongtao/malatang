@@ -80,45 +80,56 @@
 
                     <android.support.v7.widget.SwitchCompat
                         android:id="@+id/btnAddPeanut"
-                        android:layout_width="150dp"
+                        android:layout_width="130dp"
                         android:layout_height="80dp"
                         android:layout_marginStart="5dp"
                         android:layout_marginTop="90dp"
                         android:checked="true"
-                        android:text="加花生"
+                        android:text="花生"
                         android:textSize="32sp"
                         android:theme="@style/SCBSwitch" />
 
                     <android.support.v7.widget.SwitchCompat
                         android:id="@+id/btnAddOnion"
-                        android:layout_width="150dp"
+                        android:layout_width="130dp"
                         android:layout_height="80dp"
-                        android:layout_marginStart="205dp"
+                        android:layout_marginStart="175dp"
                         android:layout_marginTop="90dp"
                         android:checked="true"
-                        android:text="加葱花"
+                        android:text="葱花"
                         android:textSize="32sp"
                         android:theme="@style/SCBSwitch" />
 
                     <android.support.v7.widget.SwitchCompat
                         android:id="@+id/btnAddSesame"
-                        android:layout_width="150dp"
+                        android:layout_width="130dp"
                         android:layout_height="80dp"
-                        android:layout_marginStart="405dp"
+                        android:layout_marginStart="345dp"
                         android:layout_marginTop="90dp"
                         android:checked="true"
-                        android:text="加芝麻"
+                        android:text="芝麻"
                         android:textSize="32sp"
                         android:theme="@style/SCBSwitch" />
 
                     <android.support.v7.widget.SwitchCompat
                         android:id="@+id/btnAddCaraway"
-                        android:layout_width="150dp"
+                        android:layout_width="130dp"
                         android:layout_height="80dp"
-                        android:layout_marginStart="605dp"
+                        android:layout_marginStart="515dp"
                         android:layout_marginTop="90dp"
                         android:checked="true"
-                        android:text="加香菜"
+                        android:text="香菜"
+                        android:textSize="32sp"
+                        android:theme="@style/SCBSwitch" />
+
+                    <android.support.v7.widget.SwitchCompat
+                        android:id="@+id/btnAddSauce"
+                        android:layout_width="150dp"
+                        android:layout_height="80dp"
+                        android:layout_marginStart="685dp"
+                        android:layout_marginTop="90dp"
+                        android:checked="true"
+                        android:text="芝麻酱"
                         android:textSize="32sp"
                         android:theme="@style/SCBSwitch" />
 
