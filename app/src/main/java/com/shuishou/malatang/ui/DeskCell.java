@@ -61,7 +61,15 @@ public class DeskCell extends android.support.v7.widget.AppCompatTextView{
                 ((DeskCell)v).setChoosed(true);
             }
             //load Dish record for this Desk
-            mainActivity.getHttpOperator().queryIndentForDesk(desk.getName());
+            mainActivity.startProgressDialog("", "loading existing order...");
+            new Thread(){
+                @Override
+                public void run() {
+                    mainActivity.getHttpOperator().queryIndentForDesk(desk.getName());
+                    mainActivity.stopProgressDialog();
+                }
+            }.start();
+
         }
     }
 }

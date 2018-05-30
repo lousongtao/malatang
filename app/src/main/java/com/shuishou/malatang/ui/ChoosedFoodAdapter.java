@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.shuishou.malatang.InstantValue;
@@ -37,7 +38,7 @@ public class ChoosedFoodAdapter extends ArrayAdapter<ChoosedFood> {
         View view = LayoutInflater.from(getContext()).inflate(resourceId, parent, false);
         TextView tvHeader = (TextView)view.findViewById(R.id.tvChoosedFoodHeader);
         TextView tvReq = (TextView)view.findViewById(R.id.tvChoosedFoodReqs);
-        ImageButton imgDelete = (ImageButton)view.findViewById(R.id.imgDelete);
+        ImageView imgDelete = (ImageView)view.findViewById(R.id.imgDelete);
         if (cf.isNew()) {
             tvHeader.setText("编号 " + cf.getNo() + ", 重量 " + cf.getWeight() + ", 价格 $" + String.format(InstantValue.FORMAT_DOUBLE_2DECIMAL, cf.getPrice()));
             tvReq.setText(cf.getRequirement());

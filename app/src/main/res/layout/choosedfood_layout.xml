@@ -27,7 +27,7 @@
 
     </LinearLayout>
 
-    <ImageButton
+    <ImageView
         android:id="@+id/imgDelete"
         android:layout_width="60dp"
         android:layout_height="60dp"

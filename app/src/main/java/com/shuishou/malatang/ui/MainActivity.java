@@ -252,7 +252,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private double calculatePrice(double weight){
-        return dish.getPrice() * weight;
+        if (dish != null)
+            return dish.getPrice() * weight;
+        else return 0;
     }
 
     private void loadConfirmCode(){
@@ -396,6 +398,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             buildBluetoothSocket();
         }
 
+        //蓝牙秤是不间断发送数据, 所以socket的缓存中有一些垃圾数据. 处理垃圾数据的方法是, 先批量读取一批到buffer中, 如果buffer.size
+        //超过这个值, 直接抛弃, 继续读socket, 直到剩余数据低于这个值, 认为是缓存中最新的数据,
+        //TODO: 现场发现这个方式得到的数值依然不准确, 只能多点击几次按钮进行获取. 这个地方依然需要改进.
         int aSmalllLength = 100;
         boolean loopflag = true;//循环读取inputstream中的值
         while(loopflag) {
@@ -460,26 +465,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void startProgressDialog(String title, String message){
         progressDlg = ProgressDialog.show(this, title, message);
         //启动progress dialog后, 同时启动一个线程来关闭该process dialog, 以防系统未正常结束, 导致此progress dialog长时间卡主. 设定时间为5秒(超过bluetoothsocket的连接时间)
-//        Runnable r = new Runnable() {
-//            @Override
-//            public void run() {
-//                if (progressDlg != null)
-//                    progressDlg.dismiss();
-//            }
-//        };
-//        Handler progressDlgCanceller = new Handler();
-//        progressDlgCanceller.postDelayed(r, 5000);
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                if (progressDlg != null)
+                    progressDlg.dismiss();
+            }
+        };
+        Handler progressDlgCanceller = new Handler();
+        progressDlgCanceller.postDelayed(r, 15000);
     }
 
-    /**
-     * 如果socket未连接, 创建socket;
-     */
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-////        buildBluetoothSocket();
-//    }
-
+    public void stopProgressDialog(){
+        progressDlgHandler.sendMessage(CommonTool.buildMessage(PROGRESSDLGHANDLER_MSGWHAT_DISMISSDIALOG));
+    }
 
     @Override
     protected void onDestroy() {
@@ -494,6 +493,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void doAddToList(){
         if (txtWeight.getText() == null || txtWeight.getText().length() == 0){
             Toast.makeText(this, "请输入重量!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (dish == null){
+            Toast.makeText(this, "No dish data, please restart app!", Toast.LENGTH_SHORT).show();
             return;
         }
         String no = getNo();
@@ -541,6 +544,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void doMakeOrder(){
         if (choosedFoodList.isEmpty()){
             Toast.makeText(this, "当前列表为空!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (dish == null){
+            Toast.makeText(this, "No dish data, please restart app!", Toast.LENGTH_SHORT).show();
             return;
         }
         boolean hasNew = false;
