@@ -404,6 +404,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             buildBluetoothSocket();
         }
 
+        //蓝牙秤是不间断发送数据, 所以socket的缓存中有一些垃圾数据. 处理垃圾数据的方法是, 先批量读取一批到buffer中, 如果buffer.size
+        //超过这个值, 直接抛弃, 继续读socket, 直到剩余数据低于这个值, 认为是缓存中最新的数据,
+        //TODO: 现场发现这个方式得到的数值依然不准确, 只能多点击几次按钮进行获取. 这个地方依然需要改进.
         int aSmalllLength = 100;
         boolean loopflag = true;//循环读取inputstream中的值
         while(loopflag) {
@@ -435,6 +438,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void startProgressDialog(String title, String message){
         progressDlg = ProgressDialog.show(this, title, message);
+        //启动progress dialog后, 同时启动一个线程来关闭该process dialog, 以防系统未正常结束, 导致此progress dialog长时间卡主. 设定时间为5秒(超过bluetoothsocket的连接时间)
         Runnable r = new Runnable() {
             @Override
             public void run() {
