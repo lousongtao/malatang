@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RadioButton rbNo6;
     private RadioButton rbNo7;
     private EditText txNoManual;
+    private ListView lvChoosedFood;
 
     private BluetoothAdapter bluetoothAdapter;
     private static final int REQUEST_ENABLE_BT = 1;
@@ -113,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        ListView lvChoosedFood = (ListView) findViewById(R.id.list_choosedfood);
+        lvChoosedFood = (ListView) findViewById(R.id.list_choosedfood);
         choosedFoodAdapter = new ChoosedFoodAdapter(this, R.layout.choosedfood_layout, choosedFoodList);
         lvChoosedFood.setAdapter(choosedFoodAdapter);
         tvRefreshData = (TextView)findViewById(R.id.drawermenu_refreshdata);
@@ -315,6 +316,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public HttpOperator getHttpOperator(){
         return httpOperator;
+    }
+
+    public ListView getLvChoosedFood(){
+        return lvChoosedFood;
     }
 
     public void persistDesk(){
@@ -670,9 +675,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         choosedFoodAdapter.notifyDataSetChanged();
     }
 
+    public void removeAllChoosedFoodFromList(){
+        choosedFoodList.clear();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                choosedFoodAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
     public void setChoosedFoodList(ArrayList<ChoosedFood> list){
         choosedFoodList.clear();
         choosedFoodList.addAll(list);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                choosedFoodAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    public void addChoosedFoodToList(ChoosedFood cf){
+        choosedFoodList.add(cf);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

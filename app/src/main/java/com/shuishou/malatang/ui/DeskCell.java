@@ -51,6 +51,12 @@ public class DeskCell extends android.support.v7.widget.AppCompatTextView{
         return desk;
     }
 
+    /**
+     * 1. 设定当前cell为选中状态, 其他的都改为非选中
+     * 2. 清空右侧列表
+     * 3. 查询该桌子上面已有的麻辣烫记录
+     * 4. 根据查询结果, 把数据加入右侧列表.
+     */
     class DeskClickListener implements View.OnClickListener{
         @Override
         public void onClick(View v) {
@@ -60,13 +66,14 @@ public class DeskCell extends android.support.v7.widget.AppCompatTextView{
                 }
                 ((DeskCell)v).setChoosed(true);
             }
+            mainActivity.removeAllChoosedFoodFromList();
             //load Dish record for this Desk
-            mainActivity.startProgressDialog("", "loading existing order...");
+//            mainActivity.startProgressDialog("", "loading existing order...");
             new Thread(){
                 @Override
                 public void run() {
                     mainActivity.getHttpOperator().queryIndentForDesk(desk.getName());
-                    mainActivity.stopProgressDialog();
+//                    mainActivity.stopProgressDialog();
                 }
             }.start();
 

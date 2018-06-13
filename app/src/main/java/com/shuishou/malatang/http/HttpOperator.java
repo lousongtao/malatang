@@ -281,17 +281,16 @@ public class HttpOperator {
                 CommonTool.popupWarnDialog(mainActivity, R.drawable.error, "WRONG",
                         "Find more indents on this desk. There should have dirty data. Please report to manager!");
             } else {
-                ArrayList<ChoosedFood> list = new ArrayList<>();
                 Indent indent = result.data.get(0);
                 ArrayList<IndentDetail> details = indent.items;
                 for (int i = 0; i < details.size(); i++) {
                     IndentDetail detail = details.get(i);
                     if (detail.dishId == mainActivity.getDish().getId()){
                         ChoosedFood cf = new ChoosedFood("", 0, 0, detail.additionalRequirements, false);
-                        list.add(cf);
+                        mainActivity.addChoosedFoodToList(cf);
                     }
                 }
-                mainActivity.setChoosedFoodList(list);
+
             }
         } else {
             CommonTool.popupWarnDialog(mainActivity, R.drawable.error, "WRONG", "Failed to load indent by this desk. Please restart app!");
