@@ -805,6 +805,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         activityManager.moveTaskToFront(getTaskId(), 0);
     }
 
+    @Override
+    /**
+     * 客户现场经常发现加入列表中的菜无法删除; 初步推测, 是原有的listener对象绑定了老的MainActivity对象.
+     * 尝试一下每次resume时, 重构这些listener
+     */
+    protected void onResume() {
+        super.onResume();
+        DeleteChoosedFoodListener.rebuildInstance(this);
+    }
+
     /**
      * stop for Sumsung's Recent Task button
      * @param hasFocus
