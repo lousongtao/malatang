@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tvDishName;
     private TextView tvUploadErrorLog;
     private TextView tvExit;
+    private TextView tvUpgradeApp;
     private Button btnMakeOrder;
     private Button btnAddToList;
     private Button btnGetWeight;
@@ -121,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvServerURL = (TextView)findViewById(R.id.drawermenu_connection);
         tvUploadErrorLog = (TextView)findViewById(R.id.drawermenu_uploaderrorlog);
         tvExit = (TextView)findViewById(R.id.drawermenu_exit);
+        tvUpgradeApp = (TextView) findViewById(R.id.drawermenu_upgradeapp);
         tvDishName = (TextView)findViewById(R.id.drawmenu_dishname);
         btnMakeOrder = (Button)findViewById(R.id.btnMakeOrder);
         btnAddToList = (Button)findViewById(R.id.btnAddToList);
@@ -153,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvExit.setOnClickListener(this);
         tvDishName.setOnClickListener(this);
         tvServerURL.setOnClickListener(this);
+        tvUpgradeApp.setOnClickListener(this);
         btnGetWeight.setOnClickListener(this);
         btnMakeOrder.setOnClickListener(this);
         btnNochilli.setOnClickListener(this);
@@ -349,6 +352,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     })
                     .setNegativeButton("No", null);
             builder.create().show();
+        } else if (v == tvUpgradeApp){
+            UpgradeAppDialog dlg = new UpgradeAppDialog(this);
+            dlg.showDialog();
         } else if (v == btnGetWeight){
             readBluetoothSocketData();
         } else if (v == btnAddToList){
