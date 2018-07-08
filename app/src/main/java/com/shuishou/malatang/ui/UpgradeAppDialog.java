@@ -176,7 +176,11 @@ public class UpgradeAppDialog {
                     int code = conn.getResponseCode();
                     if ( code == 200 ) {
                         InputStream is = conn.getInputStream();
-                        File file = new File(InstantValue.LOCAL_CATEGORY_UPGRADEAPK+filename);
+                        File file = new File(InstantValue.LOCAL_CATEGORY_UPGRADEAPK);
+                        if (!file.exists()){
+                            file.mkdir();
+                        }
+                        file = new File(InstantValue.LOCAL_CATEGORY_UPGRADEAPK + filename);
                         FileOutputStream fos = new FileOutputStream(file);
                         byte[] buffer = new byte[1024];
                         int len = 0;
@@ -194,7 +198,7 @@ public class UpgradeAppDialog {
                         intent.setAction("android.intent.action.VIEW");
                         intent.addCategory("android.intent.category.DEFAULT");
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            Uri uri = FileProvider.getUriForFile(mainActivity, "com.shuishou.digitalmenu.fileprovider", file);
+                            Uri uri = FileProvider.getUriForFile(mainActivity, "com.shuishou.malatang.fileprovider", file);
                             intent.setDataAndType(uri, "application/vnd.android.package-archive");
                         } else {
 
